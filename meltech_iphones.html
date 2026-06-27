@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meltech">
+<title>Meltech iPhones</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+  :root {
+    --bg: #f5f5f4;
+    --surface: #ffffff;
+    --surface2: #f9f9f8;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.18);
+    --text: #1a1a18;
+    --text2: #5c5c58;
+    --text3: #9c9c98;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --accent-text: #1d4ed8;
+    --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --success-text: #15803d;
+    --warn: #d97706;
+    --warn-bg: #fffbeb;
+    --warn-text: #b45309;
+    --danger: #dc2626;
+    --danger-bg: #fef2f2;
+    --danger-text: #b91c1c;
+    --radius: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --surface: #2a2a28;
+      --surface2: #232321;
+      --border: rgba(255,255,255,0.1);
+      --border-strong: rgba(255,255,255,0.18);
+      --text: #f0f0ee;
+      --text2: #a0a09c;
+      --text3: #606060;
+      --accent: #3b82f6;
+      --accent-bg: #1e3a5f;
+      --accent-text: #93c5fd;
+      --success: #22c55e;
+      --success-bg: #14532d;
+      --success-text: #86efac;
+      --warn: #f59e0b;
+      --warn-bg: #451a03;
+      --warn-text: #fcd34d;
+      --danger: #ef4444;
+      --danger-bg: #450a0a;
+      --danger-text: #fca5a5;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; }
+  .app { max-width: 900px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; position: sticky; top: 0; z-index: 50; }
+  .logo { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .logo i { color: var(--accent); font-size: 20px; }
+  .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .sync-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; font-weight: 500; }
+  .sync-ok { background: var(--success-bg); color: var(--success-text); }
+  .sync-load { background: var(--warn-bg); color: var(--warn-text); }
+  .sync-err { background: var(--danger-bg); color: var(--danger-text); }
+  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tab { padding: 12px 18px; font-size: 13px; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; display: flex; align-items: center; gap: 6px; flex-shrink: 0; font-weight: 500; transition: color .15s; }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab i { font-size: 16px; }
+  .content { flex: 1; padding: 16px; }
+  .hidden { display: none !important; }
+  .grid4 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  @media (min-width: 600px) { .grid4 { grid-template-columns: repeat(4, 1fr); } }
+  .grid2 { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 14px; }
+  @media (min-width: 640px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+  .metric { background: var(--surface); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); }
+  .metric .lbl { font-size: 11px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .metric .val { font-size: 20px; font-weight: 700; }
+  .metric .sub { font-size: 11px; color: var(--text2); margin-top: 4px; }
+  .metric.ac .val { color: var(--accent); }
+  .metric.su .val { color: var(--success); }
+  .metric.wa .val { color: var(--warn); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .card-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .card-title i { color: var(--accent); font-size: 16px; }
+  .meta-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .meta-row label { font-size: 12px; color: var(--text2); min-width: 85px; }
+  .progress-bar { height: 6px; background: var(--bg); border-radius: 3px; flex: 1; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--accent); transition: width .4s; }
+  .progress-fill.done { background: var(--success); }
+  .meta-sub { font-size: 11px; color: var(--text3); margin-bottom: 12px; padding-left: 95px; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 500px; }
+  th { font-size: 11px; font-weight: 600; color: var(--text3); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); text-transform: uppercase; letter-spacing: .3px; white-space: nowrap; background: var(--surface); }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .badge { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .bg { background: var(--success-bg); color: var(--success-text); }
+  .bb { background: var(--accent-bg); color: var(--accent-text); }
+  .br { background: var(--danger-bg); color: var(--danger-text); }
+  .bw { background: var(--warn-bg); color: var(--warn-text); }
+  .bgr { background: var(--bg); color: var(--text2); border: 1px solid var(--border); }
+  .form-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  @media (min-width: 480px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--text2); font-weight: 600; }
+  .field input, .field select, .field textarea { font-family: inherit; font-size: 14px; width: 100%; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border-strong); border-radius: var(--radius); color: var(--text); outline: none; transition: border-color .15s; }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field.full { grid-column: 1 / -1; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--border-strong); background: var(--surface); color: var(--text); font-family: inherit; transition: background .15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.primary:hover { opacity: .9; }
+  .btn.danger { background: var(--danger-bg); color: var(--danger-text); border-color: var(--danger-text); }
+  .btn-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+  .section-header h3 { font-size: 15px; font-weight: 600; }
+  .empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 13px; }
+  .empty i { font-size: 36px; margin-bottom: 10px; display: block; }
+  .filter-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+  .filter-row input, .filter-row select { font-size: 12px; padding: 7px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: inherit; outline: none; }
+  .filter-row input:focus, .filter-row select:focus { border-color: var(--accent); }
+  .chip { padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-weight: 500; transition: all .15s; }
+  .chip.active { background: var(--accent-bg); color: var(--accent-text); border-color: var(--accent); }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .lucro-preview { margin: 12px 0; padding: 12px; border-radius: var(--radius); font-size: 13px; font-weight: 600; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: flex-start; justify-content: center; z-index: 200; padding: 20px; overflow-y: auto; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; width: 100%; max-width: 480px; margin-top: 10px; }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .close-btn { cursor: pointer; color: var(--text3); background: none; border: none; font-size: 20px; padding: 2px; }
+  .chart-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .tip { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .install-tip { background: var(--accent-bg); color: var(--accent-text); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="topbar">
+  <div class="logo"><i class="ti ti-device-mobile"></i> Meltech iPhones</div>
+  <div class="topbar-right">
+    <span id="sync-badge" class="sync-badge sync-load"><i class="ti ti-refresh spin"></i> Carregando...</span>
+    <button class="btn" style="padding:7px 11px;font-size:12px" onclick="sincronizar()"><i class="ti ti-refresh"></i> Sincronizar</button>
+    <button class="btn primary" onclick="abrirEntrada()" style="padding:7px 11px;font-size:12px"><i class="ti ti-plus"></i> Novo</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="trocarAba('faturamento',this)"><i class="ti ti-chart-bar"></i>Faturamento</div>
+  <div class="tab" onclick="trocarAba('entradas',this)"><i class="ti ti-arrows-exchange"></i>Entradas e saídas</div>
+  <div class="tab" onclick="trocarAba('estoque',this)"><i class="ti ti-package"></i>Estoque</div>
+</div>
+
+<div class="content">
+
+  <div id="aba-faturamento">
+    <div id="grid-fat" class="grid4"></div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-target"></i>Metas do mês</div>
+        <div id="metas-view"></div>
+        <button class="btn" style="margin-top:12px;font-size:12px" onclick="abrirMetas()"><i class="ti ti-edit"></i>Editar metas</button>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-clock"></i>Últimas vendas</div>
+        <div id="ultimas-vendas"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-chart-pie"></i>Vendas por modelo (mês atual)</div>
+      <div id="chart-modelos"></div>
+    </div>
+  </div>
+
+  <div id="aba-entradas" class="hidden">
+    <div class="section-header">
+      <h3>Entradas e saídas</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" onclick="abrirEntrada()"><i class="ti ti-plus"></i>Entrada</button>
+        <button class="btn primary" onclick="abrirSaida()"><i class="ti ti-shopping-cart"></i>Registrar venda</button>
+      </div>
+    </div>
+    <div class="filter-row">
+      <input type="text" id="busca-mov" placeholder="Buscar aparelho ou cliente..." oninput="renderMovimentos()">
+      <select id="filtro-tipo" onchange="renderMovimentos()">
+        <option value="">Todos</option>
+        <option value="entrada">Entradas</option>
+        <option value="saida">Vendas</option>
+      </select>
+      <select id="filtro-mes-mov" onchange="renderMovimentos()">
+        <option value="">Todos os meses</option>
+      </select>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th>Tipo</th><th>Data</th><th>Aparelho</th><th>Valor</th><th>Cliente</th><th>Lucro</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-mov"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <div id="aba-estoque" class="hidden">
+    <div class="section-header">
+      <h3>Estoque</h3>
+      <span id="count-est" style="font-size:12px;color:var(--text3)"></span>
+    </div>
+    <div class="filter-row">
+      <input type="text" id="busca-est" placeholder="Buscar modelo ou IMEI..." oninput="renderEstoque()">
+      <span class="chip active" onclick="setFiltroStatus('',this)">Todos</span>
+      <span class="chip" onclick="setFiltroStatus('disponivel',this)">Disponíveis</span>
+      <span class="chip" onclick="setFiltroStatus('vendido',this)">Vendidos</span>
+      <span class="chip" onclick="setFiltroStatus('garantia',this)">Garantia</span>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th>Aparelho</th><th>IMEI</th><th>Bat.</th><th>Fornecedor</th><th>Custo</th><th>Venda</th><th>Status</th><th>Dias</th><th></th>
+        </tr></thead>
+        <tbody id="tbody-est"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<div id="modal-root"></div>
+
+<script>
+var API = 'https://script.google.com/macros/s/AKfycbxCbj3vNzRc9m0QvR00099NgIyWRGf0kwFGsDPhI16UHOYEsb3LnqMyDtn7uy0pay_h/exec';
+var MKEY = 'meltech_metas_v2';
+var dados = { aparelhos: [], metas: { faturamento: 80000, lucro: 20000, vendas: 25 } };
+var filtroStatusAtivo = '';
+var salvando = false;
+
+function carregarMetas() {
+  try { var r = localStorage.getItem(MKEY); if (r) dados.metas = JSON.parse(r); } catch(e) {}
+}
+function salvarMetasLocal() {
+  try { localStorage.setItem(MKEY, JSON.stringify(dados.metas)); } catch(e) {}
+}
+
+function setSyncBadge(estado, msg) {
+  var el = document.getElementById('sync-badge');
+  el.className = 'sync-badge sync-' + estado;
+  var ic = estado === 'ok' ? 'ti-cloud-check' : estado === 'load' ? 'ti-refresh spin' : 'ti-cloud-off';
+  el.innerHTML = '<i class="ti ' + ic + '"></i> ' + msg;
+}
+
+function gerarId() { return 'a' + Date.now() + Math.floor(Math.random() * 1000); }
+
+async function sincronizar() {
+  setSyncBadge('load', 'Sincronizando...');
+  try {
+    var resp = await fetch(API + '?t=' + Date.now());
+    var json = await resp.json();
+    if (json.ok) {
+      dados.aparelhos = json.data.map(function(r) {
+        return {
+          id: r.id || gerarId(),
+          dataCompra: r.dataCompra || '',
+          fornecedor: r.fornecedor || '',
+          dataChegada: r.dataChegada || '',
+          modelo: r.modelo || '',
+          bateria: parseFloat(r.bateria) || 0,
+          custo: parseFloat(r.custo) || 0,
+          precoVenda: parseFloat(r.precoVenda) || 0,
+          imei: r.imei || '',
+          status: r.status || 'disponivel',
+          clienteNome: r.clienteNome || '',
+          clienteCidade: r.clienteCidade || '',
+          clienteWhats: r.clienteWhats || '',
+          dataVenda: r.dataVenda || '',
+          lucro: parseFloat(r.lucro) || 0,
+          garantiaAte: r.garantiaAte || ''
+        };
+      });
+      setSyncBadge('ok', 'Sincronizado');
+      renderTudo();
+    } else { throw new Error(); }
+  } catch(e) {
+    setSyncBadge('err', 'Erro ao conectar');
+  }
+}
+
+async function salvarNuvem() {
+  if (salvando) return;
+  salvando = true;
+  setSyncBadge('load', 'Salvando...');
+  try {
+    await fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'save_all', data: dados.aparelhos, metas: dados.metas }),
+      headers: { 'Content-Type': 'text/plain' }
+    });
+    setSyncBadge('ok', 'Salvo ✓');
+  } catch(e) {
+    setSyncBadge('err', 'Erro ao salvar');
+  }
+  salvando = false;
+}
+
+function mesAtual() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+function fBRL(v) { return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+function fData(s) { if (!s) return '-'; var p = s.split('-'); if (p.length < 3) return s; return p[2] + '/' + p[1] + '/' + p[0]; }
+function mesLabel(s) { var m = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; var p = s.split('-'); return m[parseInt(p[1])-1] + '/' + p[0]; }
+
+function getVendidosMes(mes) {
+  return dados.aparelhos.filter(function(a) { return a.status === 'vendido' && a.dataVenda && a.dataVenda.startsWith(mes); });
+}
+
+function renderFaturamento() {
+  var mes = mesAtual();
+  var vend = getVendidosMes(mes);
+  var fat = vend.reduce(function(s,a) { return s + (+a.precoVenda); }, 0);
+  var luc = vend.reduce(function(s,a) { return s + (+a.lucro); }, 0);
+  var qtd = vend.length;
+  var tMed = qtd ? fat / qtd : 0;
+  var lMed = qtd ? luc / qtd : 0;
+
+  document.getElementById('grid-fat').innerHTML =
+    '<div class="metric ac"><div class="lbl">Faturamento</div><div class="val">' + fBRL(fat) + '</div><div class="sub">Meta: ' + fBRL(dados.metas.faturamento) + '</div></div>' +
+    '<div class="metric su"><div class="lbl">Lucro</div><div class="val">' + fBRL(luc) + '</div><div class="sub">Média/ap: ' + fBRL(lMed) + '</div></div>' +
+    '<div class="metric"><div class="lbl">Vendidos</div><div class="val">' + qtd + '</div><div class="sub">Meta: ' + dados.metas.vendas + ' unid.</div></div>' +
+    '<div class="metric wa"><div class="lbl">Ticket médio</div><div class="val">' + fBRL(tMed) + '</div><div class="sub">Este mês</div></div>';
+
+  function bar(lbl, v, meta) {
+    var pct = Math.min(100, Math.round(v / meta * 100)) || 0;
+    return '<div class="meta-row"><label>' + lbl + '</label><div class="progress-bar"><div class="progress-fill' + (pct >= 100 ? ' done' : '') + '" style="width:' + pct + '%"></div></div><span style="font-size:11px;color:var(--text3);min-width:32px">' + pct + '%</span></div>';
+  }
+  document.getElementById('metas-view').innerHTML =
+    bar('Faturamento', fat, dados.metas.faturamento) +
+    '<div class="meta-sub">' + fBRL(fat) + ' de ' + fBRL(dados.metas.faturamento) + '</div>' +
+    bar('Lucro', luc, dados.metas.lucro) +
+    '<div class="meta-sub">' + fBRL(luc) + ' de ' + fBRL(dados.metas.lucro) + '</div>' +
+    bar('Vendas', qtd, dados.metas.vendas) +
+    '<div class="meta-sub">' + qtd + ' de ' + dados.metas.vendas + ' unidades</div>';
+
+  var ultimas = vend.slice().sort(function(a,b) { return b.dataVenda > a.dataVenda ? 1 : -1; }).slice(0, 5);
+  document.getElementById('ultimas-vendas').innerHTML = ultimas.length ? ultimas.map(function(a) {
+    return '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">' +
+      '<div><div style="font-size:13px;font-weight:500">' + a.modelo + '</div><div class="tip">' + fData(a.dataVenda) + (a.clienteNome ? ' · ' + a.clienteNome : '') + '</div></div>' +
+      '<div style="text-align:right"><div style="font-size:13px;font-weight:700">' + fBRL(a.precoVenda) + '</div><div style="font-size:11px;color:var(--success-text)">+' + fBRL(a.lucro) + '</div></div>' +
+      '</div>';
+  }).join('') : '<div class="empty"><i class="ti ti-receipt-off"></i>Nenhuma venda este mês</div>';
+
+  var cont = {};
+  vend.forEach(function(a) { var k = a.modelo.split(' ').slice(0, 3).join(' '); cont[k] = (cont[k] || 0) + 1; });
+  var mods = Object.entries(cont).sort(function(a,b) { return b[1] - a[1]; });
+  var total = mods.reduce(function(s,m) { return s + m[1]; }, 0) || 1;
+  var cores = ['#2563eb','#16a34a','#d97706','#9333ea','#dc2626'];
+  document.getElementById('chart-modelos').innerHTML = mods.length ? mods.map(function(m, i) {
+    var pct = Math.round(m[1] / total * 100);
+    return '<div class="chart-row"><div class="dot" style="background:' + cores[i % cores.length] + '"></div>' +
+      '<div style="font-size:13px;flex:1">' + m[0] + '</div>' +
+      '<div style="font-size:12px;color:var(--text3);margin-right:8px">' + m[1] + '</div>' +
+      '<div style="width:100px"><div style="height:5px;background:var(--bg);border-radius:3px"><div style="height:5px;border-radius:3px;background:' + cores[i % cores.length] + ';width:' + pct + '%"></div></div></div>' +
+      '<div style="font-size:11px;min-width:28px;text-align:right;color:var(--text3)">' + pct + '%</div></div>';
+  }).join('') : '<div class="empty">Nenhuma venda este mês</div>';
+}
+
+function getMeses() {
+  var m = {};
+  dados.aparelhos.forEach(function(a) {
+    if (a.dataCompra && a.dataCompra.length >= 7) m[a.dataCompra.slice(0, 7)] = 1;
+    if (a.dataVenda && a.dataVenda.length >= 7) m[a.dataVenda.slice(0, 7)] = 1;
+  });
+  return Object.keys(m).sort().reverse();
+}
+
+function renderMovimentos() {
+  var busca = (document.getElementById('busca-mov').value || '').toLowerCase();
+  var tipo = document.getElementById('filtro-tipo').value;
+  var mesFil = document.getElementById('filtro-mes-mov').value;
+  var meses = getMeses();
+  var sel = document.getElementById('filtro-mes-mov');
+  var prev = sel.value;
+  sel.innerHTML = '<option value="">Todos os meses</option>' + meses.map(function(m) { return '<option value="' + m + '"' + (m === prev ? ' selected' : '') + '>' + mesLabel(m) + '</option>'; }).join('');
+  var lista = [];
+  dados.aparelhos.forEach(function(a) {
+    var ok = !busca || a.modelo.toLowerCase().includes(busca) || (a.clienteNome || '').toLowerCase().includes(busca);
+    if ((!tipo || tipo === 'entrada') && (!mesFil || a.dataCompra.startsWith(mesFil)) && ok)
+      lista.push({ tipo: 'entrada', data: a.dataCompra, ap: a.modelo, val: a.custo, cli: '', lucro: 0, id: a.id });
+    if (a.status === 'vendido' && (!tipo || tipo === 'saida') && (!mesFil || a.dataVenda.startsWith(mesFil)) && ok)
+      lista.push({ tipo: 'saida', data: a.dataVenda, ap: a.modelo, val: a.precoVenda, cli: a.clienteNome, lucro: a.lucro, id: a.id });
+  });
+  lista.sort(function(a,b) { return b.data > a.data ? 1 : -1; });
+  document.getElementById('tbody-mov').innerHTML = lista.length ? lista.map(function(m) {
+    return '<tr><td><span class="badge ' + (m.tipo === 'entrada' ? 'bb' : 'bg') + '">' + (m.tipo === 'entrada' ? '↓ Entrada' : '↑ Venda') + '</span></td>' +
+      '<td style="color:var(--text2)">' + fData(m.data) + '</td>' +
+      '<td style="font-weight:500">' + m.ap + '</td>' +
+      '<td>' + fBRL(m.val) + '</td>' +
+      '<td style="color:var(--text2)">' + (m.cli || '-') + '</td>' +
+      '<td>' + (m.lucro ? '<span style="color:var(--success-text);font-weight:700">+' + fBRL(m.lucro) + '</span>' : '-') + '</td>' +
+      '<td><button class="btn" style="padding:4px 8px;font-size:11px" onclick="editarAparelho(\'' + m.id + '\')"><i class="ti ti-edit"></i></button></td></tr>';
+  }).join('') : '<tr><td colspan="7"><div class="empty"><i class="ti ti-receipt-off"></i>Nenhum registro</div></td></tr>';
+}
+
+function setFiltroStatus(s, el) {
+  filtroStatusAtivo = s;
+  document.querySelectorAll('.chip').forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+  renderEstoque();
+}
+
+function renderEstoque() {
+  var busca = (document.getElementById('busca-est').value || '').toLowerCase();
+  var lista = dados.aparelhos.filter(function(a) {
+    var ok = !busca || a.modelo.toLowerCase().includes(busca) || (a.imei || '').includes(busca);
+    if (filtroStatusAtivo) ok = ok && a.status === filtroStatusAtivo;
+    return ok;
+  });
+  var disp = dados.aparelhos.filter(function(a) { return a.status === 'disponivel'; }).length;
+  document.getElementById('count-est').textContent = disp + ' disponíveis · ' + dados.aparelhos.length + ' total';
+  var hoje = new Date();
+  document.getElementById('tbody-est').innerHTML = lista.length ? lista.map(function(a) {
+    var dias = '-';
+    if (a.dataCompra) { var dc = new Date(a.dataCompra); var ate = a.dataVenda ? new Date(a.dataVenda) : hoje; dias = Math.floor((ate - dc) / 86400000) + 'd'; }
+    var bat = a.bateria > 0 ? Math.round(a.bateria * 100) + '%' : '-';
+    var batC = a.bateria >= 0.85 ? 'var(--success-text)' : a.bateria >= 0.7 ? 'var(--warn-text)' : 'var(--danger-text)';
+    var stCls = a.status === 'disponivel' ? 'bg' : a.status === 'vendido' ? 'bgr' : 'bw';
+    var stTxt = a.status === 'disponivel' ? 'Disponível' : a.status === 'vendido' ? 'Vendido' : 'Garantia';
+    return '<tr><td style="font-weight:500">' + a.modelo + (a.clienteNome ? '<div class="tip">' + a.clienteNome + '</div>' : '') + '</td>' +
+      '<td class="tip">' + a.imei + '</td>' +
+      '<td style="color:' + batC + ';font-weight:700">' + bat + '</td>' +
+      '<td style="color:var(--text2)">' + a.fornecedor + '</td>' +
+      '<td>' + fBRL(a.custo) + '</td>' +
+      '<td>' + fBRL(a.precoVenda) + '</td>' +
+      '<td><span class="badge ' + stCls + '">' + stTxt + '</span></td>' +
+      '<td class="tip">' + dias + '</td>' +
+      '<td><button class="btn" style="padding:4px 8px;font-size:11px" onclick="editarAparelho(\'' + a.id + '\')"><i class="ti ti-edit"></i></button></td></tr>';
+  }).join('') : '<tr><td colspan="9"><div class="empty"><i class="ti ti-package-off"></i>Nenhum aparelho</div></td></tr>';
+}
+
+function trocarAba(aba, el) {
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  el.classList.add('active');
+  ['faturamento', 'entradas', 'estoque'].forEach(function(a) {
+    document.getElementById('aba-' + a).classList[a === aba ? 'remove' : 'add']('hidden');
+  });
+  if (aba === 'entradas') renderMovimentos();
+  if (aba === 'estoque') renderEstoque();
+  if (aba === 'faturamento') renderFaturamento();
+}
+
+function fecharModal() { document.getElementById('modal-root').innerHTML = ''; }
+
+function hoje() { return new Date().toISOString().slice(0, 10); }
+
+function abrirEntrada() {
+  document.getElementById('modal-root').innerHTML =
+    '<div class="modal-overlay"><div class="modal"><h3>Entrada de aparelho <button class="close-btn" onclick="fecharModal()"><i class="ti ti-x"></i></button></h3>' +
+    '<div class="form-grid">' +
+    '<div class="field full"><label>Modelo</label><input id="e-modelo" placeholder="iPhone 15 Pro Max 256GB Preto"></div>' +
+    '<div class="field"><label>IMEI</label><input id="e-imei" placeholder="356339102765890"></div>' +
+    '<div class="field"><label>Bateria (%)</label><input id="e-bat" type="number" min="0" max="100" placeholder="85"></div>' +
+    '<div class="field"><label>Custo (R$)</label><input id="e-custo" type="number" placeholder="2500"></div>' +
+    '<div class="field"><label>Preço de venda (R$)</label><input id="e-pvenda" type="number" placeholder="3200"></div>' +
+    '<div class="field"><label>Fornecedor</label><input id="e-forn" placeholder="Nome do fornecedor"></div>' +
+    '<div class="field"><label>Data de compra</label><input id="e-data" type="date" value="' + hoje() + '"></div>' +
+    '<div class="field"><label>Data de chegada</label><input id="e-chegada" type="date" value="' + hoje() + '"></div>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn primary" id="btn-se" onclick="salvarEntrada()"><i class="ti ti-check"></i>Salvar entrada</button><button class="btn" onclick="fecharModal()">Cancelar</button></div>' +
+    '</div></div>';
+}
+
+async function salvarEntrada() {
+  var modelo = document.getElementById('e-modelo').value.trim();
+  if (!modelo) { alert('Informe o modelo'); return; }
+  var btn = document.getElementById('btn-se');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-refresh spin"></i> Salvando...';
+  var bat = parseFloat(document.getElementById('e-bat').value) || 0;
+  dados.aparelhos.push({
+    id: gerarId(), dataCompra: document.getElementById('e-data').value,
+    fornecedor: document.getElementById('e-forn').value.trim(),
+    dataChegada: document.getElementById('e-chegada').value,
+    modelo: modelo, bateria: bat / 100,
+    custo: parseFloat(document.getElementById('e-custo').value) || 0,
+    precoVenda: parseFloat(document.getElementById('e-pvenda').value) || 0,
+    imei: document.getElementById('e-imei').value.trim(),
+    status: 'disponivel', clienteNome: '', clienteCidade: '', clienteWhats: '',
+    dataVenda: '', lucro: 0, garantiaAte: ''
+  });
+  await salvarNuvem();
+  fecharModal(); renderTudo();
+}
+
+function abrirSaida() {
+  var disp = dados.aparelhos.filter(function(a) { return a.status === 'disponivel'; });
+  if (!disp.length) { alert('Nenhum aparelho disponível no estoque'); return; }
+  var opts = disp.map(function(a) { return '<option value="' + a.id + '">' + a.modelo + ' — ' + fBRL(a.precoVenda) + '</option>'; }).join('');
+  document.getElementById('modal-root').innerHTML =
+    '<div class="modal-overlay"><div class="modal"><h3>Registrar venda <button class="close-btn" onclick="fecharModal()"><i class="ti ti-x"></i></button></h3>' +
+    '<div class="form-grid">' +
+    '<div class="field full"><label>Aparelho</label><select id="v-id" onchange="atualizarVenda()"><option value="">Selecione...</option>' + opts + '</select></div>' +
+    '<div class="field"><label>Preço de venda (R$)</label><input id="v-preco" type="number" oninput="previewLucro()" placeholder="0"></div>' +
+    '<div class="field"><label>Data da venda</label><input id="v-data" type="date" value="' + hoje() + '"></div>' +
+    '<div class="field"><label>Nome do cliente</label><input id="v-cliente" placeholder="Nome completo"></div>' +
+    '<div class="field"><label>WhatsApp</label><input id="v-whats" placeholder="47 9 9999-9999"></div>' +
+    '<div class="field"><label>Cidade</label><input id="v-cidade" placeholder="Jaraguá do Sul"></div>' +
+    '<div class="field full"><label>Garantia (meses)</label><input id="v-gar" type="number" value="6" min="0"></div>' +
+    '</div>' +
+    '<div id="lucro-prev" class="lucro-preview hidden"></div>' +
+    '<div class="btn-row"><button class="btn primary" id="btn-sv" onclick="salvarVenda()"><i class="ti ti-shopping-cart"></i>Confirmar venda</button><button class="btn" onclick="fecharModal()">Cancelar</button></div>' +
+    '</div></div>';
+}
+
+function atualizarVenda() {
+  var id = document.getElementById('v-id').value;
+  if (!id) return;
+  var a = dados.aparelhos.find(function(x) { return x.id === id; });
+  if (a) document.getElementById('v-preco').value = a.precoVenda;
+  previewLucro();
+}
+
+function previewLucro() {
+  var id = document.getElementById('v-id').value;
+  var preco = parseFloat(document.getElementById('v-preco').value) || 0;
+  var el = document.getElementById('lucro-prev');
+  if (!id || !preco) { el.classList.add('hidden'); return; }
+  var a = dados.aparelhos.find(function(x) { return x.id === id; });
+  if (!a) return;
+  var l = preco - a.custo;
+  el.classList.remove('hidden');
+  el.style.background = l < 0 ? 'var(--danger-bg)' : 'var(--success-bg)';
+  el.style.color = l < 0 ? 'var(--danger-text)' : 'var(--success-text)';
+  el.innerHTML = '<i class="ti ti-coin"></i> Lucro estimado: ' + fBRL(l) + (l < 0 ? ' ⚠️ Prejuízo!' : '');
+}
+
+async function salvarVenda() {
+  var id = document.getElementById('v-id').value;
+  if (!id) { alert('Selecione um aparelho'); return; }
+  var preco = parseFloat(document.getElementById('v-preco').value) || 0;
+  var gar = parseInt(document.getElementById('v-gar').value) || 0;
+  var dataV = document.getElementById('v-data').value;
+  var d = new Date(dataV); d.setMonth(d.getMonth() + gar);
+  var garAte = d.toISOString().slice(0, 10);
+  var btn = document.getElementById('btn-sv');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-refresh spin"></i> Salvando...';
+  dados.aparelhos = dados.aparelhos.map(function(a) {
+    if (a.id === id) return Object.assign({}, a, {
+      status: 'vendido', precoVenda: preco, lucro: preco - a.custo,
+      clienteNome: document.getElementById('v-cliente').value.trim(),
+      clienteWhats: document.getElementById('v-whats').value.trim(),
+      clienteCidade: document.getElementById('v-cidade').value.trim(),
+      dataVenda: dataV, garantiaAte: garAte
+    });
+    return a;
+  });
+  await salvarNuvem();
+  fecharModal(); renderTudo();
+}
+
+function editarAparelho(id) {
+  var a = dados.aparelhos.find(function(x) { return x.id === id; });
+  if (!a) return;
+  document.getElementById('modal-root').innerHTML =
+    '<div class="modal-overlay"><div class="modal"><h3>Editar aparelho <button class="close-btn" onclick="fecharModal()"><i class="ti ti-x"></i></button></h3>' +
+    '<div class="form-grid">' +
+    '<div class="field full"><label>Modelo</label><input id="ed-mod" value="' + a.modelo + '"></div>' +
+    '<div class="field"><label>IMEI</label><input id="ed-imei" value="' + (a.imei || '') + '"></div>' +
+    '<div class="field"><label>Bateria (%)</label><input id="ed-bat" type="number" value="' + Math.round(a.bateria * 100) + '"></div>' +
+    '<div class="field"><label>Custo (R$)</label><input id="ed-custo" type="number" value="' + a.custo + '"></div>' +
+    '<div class="field"><label>Preço de venda (R$)</label><input id="ed-pvenda" type="number" value="' + a.precoVenda + '"></div>' +
+    '<div class="field"><label>Fornecedor</label><input id="ed-forn" value="' + (a.fornecedor || '') + '"></div>' +
+    '<div class="field"><label>Data de compra</label><input id="ed-data" type="date" value="' + (a.dataCompra || '') + '"></div>' +
+    '<div class="field"><label>Status</label><select id="ed-status">' +
+    '<option value="disponivel"' + (a.status === 'disponivel' ? ' selected' : '') + '>Disponível</option>' +
+    '<option value="vendido"' + (a.status === 'vendido' ? ' selected' : '') + '>Vendido</option>' +
+    '<option value="garantia"' + (a.status === 'garantia' ? ' selected' : '') + '>Em garantia</option>' +
+    '</select></div>' +
+    (a.status === 'vendido' ?
+    '<div class="field"><label>Cliente</label><input id="ed-cliente" value="' + (a.clienteNome || '') + '"></div>' +
+    '<div class="field"><label>WhatsApp</label><input id="ed-whats" value="' + (a.clienteWhats || '') + '"></div>' +
+    '<div class="field"><label>Cidade</label><input id="ed-cidade" value="' + (a.clienteCidade || '') + '"></div>' +
+    '<div class="field"><label>Data de venda</label><input id="ed-datav" type="date" value="' + (a.dataVenda || '') + '"></div>'
+    : '') +
+    '</div>' +
+    '<div class="btn-row">' +
+    '<button class="btn primary" id="btn-ed" onclick="salvarEdicao(\'' + id + '\')"><i class="ti ti-check"></i>Salvar</button>' +
+    '<button class="btn danger" onclick="excluirAparelho(\'' + id + '\')"><i class="ti ti-trash"></i>Excluir</button>' +
+    '<button class="btn" onclick="fecharModal()">Cancelar</button>' +
+    '</div></div></div>';
+}
+
+async function salvarEdicao(id) {
+  var btn = document.getElementById('btn-ed');
+  btn.disabled = true; btn.innerHTML = '<i class="ti ti-refresh spin"></i> Salvando...';
+  var bat = parseFloat(document.getElementById('ed-bat').value) || 0;
+  var custo = parseFloat(document.getElementById('ed-custo').value) || 0;
+  var pvenda = parseFloat(document.getElementById('ed-pvenda').value) || 0;
+  var status = document.getElementById('ed-status').value;
+  dados.aparelhos = dados.aparelhos.map(function(a) {
+    if (a.id === id) {
+      var upd = Object.assign({}, a, {
+        modelo: document.getElementById('ed-mod').value.trim(),
+        imei: document.getElementById('ed-imei').value.trim(),
+        bateria: bat / 100, custo: custo, precoVenda: pvenda,
+        lucro: status === 'vendido' ? pvenda - custo : 0,
+        fornecedor: document.getElementById('ed-forn').value.trim(),
+        dataCompra: document.getElementById('ed-data').value,
+        status: status
+      });
+      if (status === 'vendido' && document.getElementById('ed-cliente')) {
+        upd.clienteNome = document.getElementById('ed-cliente').value.trim();
+        upd.clienteWhats = document.getElementById('ed-whats').value.trim();
+        upd.clienteCidade = document.getElementById('ed-cidade').value.trim();
+        upd.dataVenda = document.getElementById('ed-datav').value;
+      }
+      return upd;
+    }
+    return a;
+  });
+  await salvarNuvem();
+  fecharModal(); renderTudo();
+}
+
+async function excluirAparelho(id) {
+  if (!confirm('Excluir este aparelho permanentemente?')) return;
+  dados.aparelhos = dados.aparelhos.filter(function(a) { return a.id !== id; });
+  await salvarNuvem();
+  fecharModal(); renderTudo();
+}
+
+function abrirMetas() {
+  document.getElementById('modal-root').innerHTML =
+    '<div class="modal-overlay"><div class="modal"><h3>Metas do mês <button class="close-btn" onclick="fecharModal()"><i class="ti ti-x"></i></button></h3>' +
+    '<div class="form-grid">' +
+    '<div class="field full"><label>Meta de faturamento (R$)</label><input id="m-fat" type="number" value="' + dados.metas.faturamento + '"></div>' +
+    '<div class="field full"><label>Meta de lucro (R$)</label><input id="m-luc" type="number" value="' + dados.metas.lucro + '"></div>' +
+    '<div class="field full"><label>Meta de vendas (unidades)</label><input id="m-vnd" type="number" value="' + dados.metas.vendas + '"></div>' +
+    '</div>' +
+    '<div class="btn-row"><button class="btn primary" onclick="confirmarMetas()"><i class="ti ti-check"></i>Salvar metas</button><button class="btn" onclick="fecharModal()">Cancelar</button></div>' +
+    '</div></div>';
+}
+
+function confirmarMetas() {
+  dados.metas = {
+    faturamento: parseFloat(document.getElementById('m-fat').value) || 0,
+    lucro: parseFloat(document.getElementById('m-luc').value) || 0,
+    vendas: parseInt(document.getElementById('m-vnd').value) || 0
+  };
+  salvarMetasLocal();
+  fecharModal(); renderFaturamento();
+}
+
+function renderTudo() {
+  renderFaturamento();
+  if (!document.getElementById('aba-entradas').classList.contains('hidden')) renderMovimentos();
+  if (!document.getElementById('aba-estoque').classList.contains('hidden')) renderEstoque();
+}
+
+carregarMetas();
+sincronizar();
+setInterval(sincronizar, 30000);
+</script>
+</body>
+</html>
