@@ -756,7 +756,7 @@
   <header>
     <div class="logo">
       <div class="logo-icon">📱</div>
-      <h1>Meltech iPhones <span>Central Financeira</span></h1>
+      <h1>Meltech iPhones <span>Dashboard</span></h1>
     </div>
     <div class="header-right">
       <div class="month-selector">
@@ -778,8 +778,8 @@
       </div>
       <nav class="tab-nav">
         <button class="tab-btn active" onclick="showView('dashboard')">Dashboard</button>
-        <button class="tab-btn" onclick="showView('metas')">Metas</button>
-        <button class="tab-btn" onclick="showView('entradas')">Lançamentos</button>
+        <button class="tab-btn" onclick="showView('anual')">Visão Anual</button>
+        <button class="tab-btn" onclick="showView('comparativo')">Comparativo</button>
       </nav>
     </div>
   </header>
@@ -934,81 +934,111 @@
     </div>
   </div>
 
-  <!-- ===== METAS VIEW ===== -->
-  <div class="view" id="view-metas">
-    <div class="section-header">
-      <div class="section-title">Metas por Mês</div>
-    </div>
-    <div class="metas-grid" id="metas-grid"></div>
-  </div>
-
-  <!-- ===== ENTRADAS VIEW ===== -->
-  <div class="view" id="view-entradas">
-    <div class="section-header">
-      <div class="section-title">Lançar Dados do Mês</div>
-    </div>
-
-    <div class="form-card">
-      <div class="form-grid">
-        <div class="form-field">
-          <label>Mês</label>
-          <select id="inp-mes">
-            <option value="0">Janeiro</option>
-            <option value="1">Fevereiro</option>
-            <option value="2">Março</option>
-            <option value="3">Abril</option>
-            <option value="4">Maio</option>
-            <option value="5">Junho</option>
-            <option value="6">Julho</option>
-            <option value="7">Agosto</option>
-            <option value="8">Setembro</option>
-            <option value="9">Outubro</option>
-            <option value="10">Novembro</option>
-            <option value="11">Dezembro</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label>Ano</label>
-          <select id="inp-ano"></select>
-        </div>
-        <div class="form-field">
-          <label>Faturamento (R$)</label>
-          <input type="number" id="inp-fat" placeholder="Ex: 50000" min="0">
-        </div>
-        <div class="form-field">
-          <label>Lucro (R$)</label>
-          <input type="number" id="inp-lucro" placeholder="Ex: 8000" min="0">
-        </div>
-        <div class="form-field">
-          <label>Qtd Aparelhos Vendidos</label>
-          <input type="number" id="inp-qtd" placeholder="Ex: 30" min="0">
-        </div>
-        <div class="form-field" style="justify-content: flex-end;">
-          <label>&nbsp;</label>
-          <button class="btn-primary" onclick="saveEntry()">✅ Salvar Lançamento</button>
-        </div>
+  <!-- ===== VISÃO ANUAL ===== -->
+  <div class="view" id="view-anual">
+    <div class="section-header" style="margin-bottom:20px;">
+      <div class="section-title">Visão Anual</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px;">Ano</label>
+        <select id="anual-sel-ano" onchange="renderAnual()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--accent);padding:8px 14px;font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;cursor:pointer;"></select>
       </div>
     </div>
 
-    <div class="entries-list">
+    <!-- KPIs anuais -->
+    <div class="kpi-grid" id="anual-kpis" style="margin-bottom:20px;"></div>
+
+    <!-- Tabela mensal do ano -->
+    <div class="data-card" style="margin-bottom:20px;">
       <div class="data-card-header">
-        <div><div class="data-card-title">Lançamentos Salvos</div></div>
+        <div>
+          <div class="data-card-title">Detalhamento Mensal</div>
+          <div class="data-card-sub" id="anual-table-sub">Todos os meses do ano selecionado</div>
+        </div>
       </div>
       <table>
         <thead>
           <tr>
-            <th>Mês/Ano</th>
+            <th>Mês</th>
             <th>Faturamento</th>
             <th>Lucro</th>
-            <th>Qtd</th>
+            <th>Margem</th>
+            <th>Aparelhos</th>
             <th>Lucro/Un</th>
-            <th>Ações</th>
+            <th>vs Ano Ant.</th>
           </tr>
         </thead>
-        <tbody id="entries-tbody">
-          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Nenhum lançamento ainda.</td></tr>
-        </tbody>
+        <tbody id="anual-tbody"></tbody>
       </table>
+    </div>
+
+    <!-- Gráfico anual -->
+    <div class="bottom-grid">
+      <div class="data-card">
+        <div class="data-card-header">
+          <div><div class="data-card-title">Faturamento por Mês</div><div class="data-card-sub" id="anual-chart-fat-sub"></div></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="bar-chart" id="anual-chart-fat"></div>
+          <div class="bar-labels" id="anual-labels-fat"></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot current"></div> Ano selecionado</div>
+          <div class="legend-item"><div class="legend-dot prev"></div> Ano anterior</div>
+        </div>
+      </div>
+      <div class="data-card">
+        <div class="data-card-header">
+          <div><div class="data-card-title">Lucro por Mês</div><div class="data-card-sub" id="anual-chart-lucro-sub"></div></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="bar-chart" id="anual-chart-lucro"></div>
+          <div class="bar-labels" id="anual-labels-lucro"></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot current" style="background:var(--accent3);"></div> Ano selecionado</div>
+          <div class="legend-item"><div class="legend-dot prev"></div> Ano anterior</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COMPARATIVO ===== -->
+  <div class="view" id="view-comparativo">
+    <div class="section-header" style="margin-bottom:20px;">
+      <div class="section-title">Comparativo entre Meses</div>
+    </div>
+
+    <!-- Seletores dos dois meses -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <div class="data-card" style="padding:20px;">
+        <div style="font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:0.8px;font-weight:600;margin-bottom:14px;">Mês A</div>
+        <div style="display:flex;gap:10px;">
+          <select id="comp-mes-a" onchange="renderComparativo()" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none;">
+            <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+            <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+            <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+            <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+          </select>
+          <select id="comp-ano-a" onchange="renderComparativo()" style="width:90px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"></select>
+        </div>
+      </div>
+      <div class="data-card" style="padding:20px;">
+        <div style="font-size:11px;color:var(--accent2);text-transform:uppercase;letter-spacing:0.8px;font-weight:600;margin-bottom:14px;">Mês B</div>
+        <div style="display:flex;gap:10px;">
+          <select id="comp-mes-b" onchange="renderComparativo()" style="flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none;">
+            <option value="0">Janeiro</option><option value="1">Fevereiro</option><option value="2">Março</option>
+            <option value="3">Abril</option><option value="4">Maio</option><option value="5">Junho</option>
+            <option value="6">Julho</option><option value="7">Agosto</option><option value="8">Setembro</option>
+            <option value="9">Outubro</option><option value="10">Novembro</option><option value="11">Dezembro</option>
+          </select>
+          <select id="comp-ano-b" onchange="renderComparativo()" style="width:90px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cards comparativos -->
+    <div id="comp-result">
+      <div style="text-align:center;color:var(--muted);padding:60px;font-size:14px;">Selecione dois meses para comparar</div>
     </div>
   </div>
 
@@ -1102,8 +1132,8 @@ function showView(name) {
   document.getElementById('view-' + name).classList.add('active');
   event.target.classList.add('active');
   if (name === 'dashboard') renderDashboard();
-  if (name === 'metas') renderMetas();
-  if (name === 'entradas') renderEntries();
+  if (name === 'anual') renderAnual();
+  if (name === 'comparativo') renderComparativo();
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -1257,78 +1287,6 @@ function renderBarChart(data, cy) {
   });
 }
 
-// ─── METAS ────────────────────────────────────────────────────────────────────
-
-async function renderMetas() {
-  const data = await apiGet();
-  const now = new Date();
-  const cy = now.getFullYear();
-  const cm = now.getMonth();
-  const years = [cy - 1, cy, cy + 1];
-  const grid = document.getElementById('metas-grid');
-  grid.innerHTML = '';
-
-  MONTHS_FULL.forEach((name, m) => {
-    const isCur = m === cm;
-    const isPast = m < cm;
-    const metaThisMonth = data.metas[m] || {};
-    const fatKey = entryKey(cy, m);
-    const metaVal = metaThisMonth[cy] || 0;
-    const lucroEntry = data.entries[fatKey]?.lucro || 0;
-    const pctVal = metaVal > 0 ? Math.min((lucroEntry / metaVal) * 100, 100) : 0;
-
-    const badge = isCur
-      ? `<span class="current-badge">Atual</span>`
-      : `<span class="year-label">${cy}</span>`;
-
-    const yearInputs = years.map(y => `
-      <div class="meta-field">
-        <label>${y}</label>
-        <input type="number" id="meta-${m}-${y}" placeholder="R$ meta" value="${metaThisMonth[y] || ''}" min="0">
-      </div>`).join('');
-
-    const progressBlock = metaVal > 0 ? `
-      <div class="meta-progress-mini">
-        <div class="meta-progress-fill" style="width:${pctVal}%"></div>
-      </div>
-      <div class="meta-pct-label">${pctVal.toFixed(0)}% atingido (${fmt(lucroEntry)} lucro / meta ${fmt(metaVal)})</div>
-    ` : '';
-
-    grid.innerHTML += `
-      <div class="meta-month-card ${isCur ? 'is-current' : ''} ${isPast && !isCur ? 'is-past' : ''}">
-        <div class="meta-month-name">${name.toUpperCase()} ${badge}</div>
-        <div class="meta-input-row">
-          ${yearInputs}
-          <button class="meta-save-btn" onclick="saveMeta(${m}, [${years.join(',')}])">Salvar Metas</button>
-          ${progressBlock}
-        </div>
-      </div>`;
-  });
-}
-
-async function saveMeta(month, years) {
-  const btn = event.target;
-  btn.disabled = true;
-  btn.textContent = 'Salvando...';
-  try {
-    for (const y of years) {
-      const val = parseFloat(document.getElementById(`meta-${month}-${y}`)?.value || 0);
-      if (!isNaN(val) && val > 0) {
-        await apiPost({ action: 'save_meta', month, year: y, value: val });
-      }
-    }
-    showToast('✅ Meta salva na planilha!');
-    await renderMetas();
-  } catch {
-    // erro já mostrado no apiPost
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Salvar Metas';
-  }
-}
-
-// ─── ENTRADAS ─────────────────────────────────────────────────────────────────
-
 function initDashboardSelectors() {
   const now = new Date();
   const cy = now.getFullYear();
@@ -1336,7 +1294,7 @@ function initDashboardSelectors() {
   document.getElementById('sel-mes').value = cm;
   const selAno = document.getElementById('sel-ano');
   selAno.innerHTML = '';
-  [cy - 2, cy - 1, cy, cy + 1].forEach(y => {
+  [cy - 3, cy - 2, cy - 1, cy].forEach(y => {
     const o = document.createElement('option');
     o.value = y; o.textContent = y;
     if (y === cy) o.selected = true;
@@ -1344,90 +1302,276 @@ function initDashboardSelectors() {
   });
 }
 
-function initEntradas() {
+// ─── VISÃO ANUAL ─────────────────────────────────────────────────────────────
+
+function initAnualSelector() {
   const now = new Date();
   const cy = now.getFullYear();
-  document.getElementById('inp-mes').value = now.getMonth();
-  const yearSel = document.getElementById('inp-ano');
-  yearSel.innerHTML = '';
-  [cy - 3, cy - 2, cy - 1, cy, cy+ 1 ].forEach(y => {
+  const sel = document.getElementById('anual-sel-ano');
+  sel.innerHTML = '';
+  [cy - 3, cy - 2, cy - 1, cy].forEach(y => {
     const o = document.createElement('option');
     o.value = y; o.textContent = y;
     if (y === cy) o.selected = true;
-    yearSel.appendChild(o);
+    sel.appendChild(o);
   });
 }
 
-async function saveEntry() {
-  const m = parseInt(document.getElementById('inp-mes').value);
-  const y = parseInt(document.getElementById('inp-ano').value);
-  const fat = parseFloat(document.getElementById('inp-fat').value || 0);
-  const lucro = parseFloat(document.getElementById('inp-lucro').value || 0);
-  const qtd = parseInt(document.getElementById('inp-qtd').value || 0);
-
-  if (!fat && !lucro && !qtd) { showToast('⚠️ Preencha ao menos um valor.'); return; }
-
-  const btn = document.querySelector('[onclick="saveEntry()"]');
-  btn.disabled = true;
-  btn.textContent = 'Salvando...';
-
-  try {
-    const key = entryKey(y, m);
-    await apiPost({ action: 'save_entry', entry: { key, fat, lucro, qtd } });
-    showToast('✅ Lançamento salvo na planilha!');
-    // limpa campos
-    document.getElementById('inp-fat').value = '';
-    document.getElementById('inp-lucro').value = '';
-    document.getElementById('inp-qtd').value = '';
-    await renderEntries();
-  } catch {
-    // erro já mostrado no apiPost
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '✅ Salvar Lançamento';
-  }
-}
-
-async function deleteEntry(key) {
-  if (!confirm('Remover este lançamento da planilha?')) return;
-  try {
-    await apiPost({ action: 'delete_entry', key });
-    showToast('🗑️ Lançamento removido.');
-    await renderEntries();
-  } catch {}
-}
-
-async function renderEntries() {
+async function renderAnual() {
   const data = await apiGet();
-  const tbody = document.getElementById('entries-tbody');
-  const keys = Object.keys(data.entries).sort().reverse();
+  const cy = parseInt(document.getElementById('anual-sel-ano').value);
+  const prevY = cy - 1;
 
-  if (!keys.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Nenhum lançamento ainda.</td></tr>';
+  // Totais do ano
+  let totalFat = 0, totalLucro = 0, totalQtd = 0;
+  let prevFat = 0, prevLucro = 0, prevQtd = 0;
+  let mesesComDados = 0, melhorMes = null, melhorLucro = -Infinity;
+
+  for (let m = 0; m < 12; m++) {
+    const e = data.entries[entryKey(cy, m)];
+    const p = data.entries[entryKey(prevY, m)];
+    if (e) {
+      totalFat += e.fat || 0;
+      totalLucro += e.lucro || 0;
+      totalQtd += e.qtd || 0;
+      mesesComDados++;
+      if ((e.lucro || 0) > melhorLucro) { melhorLucro = e.lucro || 0; melhorMes = m; }
+    }
+    if (p) { prevFat += p.fat || 0; prevLucro += p.lucro || 0; prevQtd += p.qtd || 0; }
+  }
+
+  const margem = totalFat > 0 ? (totalLucro / totalFat * 100) : 0;
+  const lucroMedioAno = totalQtd > 0 ? totalLucro / totalQtd : 0;
+
+  function deltaStr(cur, prev) {
+    if (!prev) return '<span class="kpi-delta neutral">— Sem dado anterior</span>';
+    const d = ((cur - prev) / prev * 100);
+    const cls = d >= 0 ? 'up' : 'down', arrow = d >= 0 ? '▲' : '▼';
+    return `<span class="kpi-delta ${cls}">${arrow} ${Math.abs(d).toFixed(1)}% vs ${prevY}</span>`;
+  }
+
+  document.getElementById('anual-kpis').innerHTML = `
+    <div class="kpi-card">
+      <div class="kpi-label">Faturamento Total ${cy}</div>
+      <div class="kpi-value cyan">${fmt(totalFat)}</div>
+      ${deltaStr(totalFat, prevFat)}
+      <div class="kpi-icon">💰</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Lucro Total ${cy}</div>
+      <div class="kpi-value green">${fmt(totalLucro)}</div>
+      ${deltaStr(totalLucro, prevLucro)}
+      <div class="kpi-icon">📈</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Aparelhos Vendidos ${cy}</div>
+      <div class="kpi-value white">${totalQtd}</div>
+      ${deltaStr(totalQtd, prevQtd)}
+      <div class="kpi-icon">📱</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Margem Média Anual</div>
+      <div class="kpi-value purple">${margem.toFixed(1)}%</div>
+      <span class="kpi-delta neutral">${mesesComDados} meses com dados · Lucro/un: ${fmt(lucroMedioAno)}</span>
+      <div class="kpi-icon">📊</div>
+    </div>`;
+
+  // Tabela mensal
+  document.getElementById('anual-table-sub').textContent = `Detalhamento de todos os meses de ${cy}`;
+  const rows = MONTHS_FULL.map((name, m) => {
+    const e = data.entries[entryKey(cy, m)];
+    const p = data.entries[entryKey(prevY, m)];
+    if (!e) return `<tr><td class="month-name" style="color:var(--muted)">${name}</td><td colspan="6" style="color:var(--muted);font-size:12px;">Sem dados</td></tr>`;
+    const lucro = e.lucro || 0;
+    const margM = e.fat > 0 ? (lucro / e.fat * 100).toFixed(1) + '%' : '—';
+    const lun = e.qtd > 0 ? fmt(lucro / e.qtd) : '—';
+    let yoy = '<span class="yoy-badge na">N/A</span>';
+    if (p && p.fat > 0) {
+      const g = ((e.fat - p.fat) / p.fat * 100);
+      const cls = g >= 0 ? 'up' : 'down', arrow = g >= 0 ? '▲' : '▼';
+      yoy = `<span class="yoy-badge ${cls}">${arrow} ${Math.abs(g).toFixed(0)}%</span>`;
+    }
+    const isBest = m === melhorMes;
+    return `<tr class="${isBest ? 'current-month' : ''}">
+      <td class="month-name">${name}${isBest ? ' 🏆' : ''}</td>
+      <td>${fmt(e.fat)}</td>
+      <td style="color:var(--accent3)">${fmt(lucro)}</td>
+      <td style="color:var(--dim)">${margM}</td>
+      <td>${e.qtd}</td>
+      <td>${lun}</td>
+      <td>${yoy}</td>
+    </tr>`;
+  });
+  document.getElementById('anual-tbody').innerHTML = rows.join('');
+
+  // Gráficos
+  renderBarChartGeneric('anual-chart-fat', 'anual-labels-fat', data, cy, 'fat', 'var(--accent)', 'rgba(124,58,237,0.6)');
+  renderBarChartGeneric('anual-chart-lucro', 'anual-labels-lucro', data, cy, 'lucro', 'var(--accent3)', 'rgba(124,58,237,0.4)');
+  document.getElementById('anual-chart-fat-sub').textContent = `${cy} vs ${prevY}`;
+  document.getElementById('anual-chart-lucro-sub').textContent = `${cy} vs ${prevY}`;
+}
+
+function renderBarChartGeneric(chartId, labelsId, data, cy, field, colorCur, colorPrev) {
+  const maxVal = Math.max(1, ...MONTHS.map((_, m) => {
+    const a = data.entries[entryKey(cy, m)]?.[field] || 0;
+    const b = data.entries[entryKey(cy - 1, m)]?.[field] || 0;
+    return Math.max(a, b);
+  }));
+  const chart = document.getElementById(chartId);
+  const labels = document.getElementById(labelsId);
+  chart.innerHTML = ''; labels.innerHTML = '';
+  MONTHS.forEach((label, m) => {
+    const cur = data.entries[entryKey(cy, m)]?.[field] || 0;
+    const prev = data.entries[entryKey(cy - 1, m)]?.[field] || 0;
+    const hCur = Math.max((cur / maxVal) * 130, cur > 0 ? 4 : 0);
+    const hPrev = Math.max((prev / maxVal) * 130, prev > 0 ? 4 : 0);
+    chart.innerHTML += `<div class="bar-group">
+      <div class="bar prev" style="height:${hPrev}px;background:${colorPrev}" title="${MONTHS_FULL[m]} ${cy-1}: ${fmt(prev)}"></div>
+      <div class="bar current" style="height:${hCur}px;background:${colorCur}" title="${MONTHS_FULL[m]} ${cy}: ${fmt(cur)}"></div>
+    </div>`;
+    labels.innerHTML += `<div class="bar-label">${label}</div>`;
+  });
+}
+
+// ─── COMPARATIVO ─────────────────────────────────────────────────────────────
+
+function initComparativoSelectors() {
+  const now = new Date();
+  const cy = now.getFullYear();
+  const anos = [cy - 3, cy - 2, cy - 1, cy];
+  ['comp-ano-a', 'comp-ano-b'].forEach((id, i) => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '';
+    anos.forEach(y => {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y;
+      if (y === cy) o.selected = true;
+      sel.appendChild(o);
+    });
+  });
+  // Default: mês atual vs mês anterior
+  const cm = now.getMonth();
+  document.getElementById('comp-mes-a').value = cm > 0 ? cm - 1 : 11;
+  document.getElementById('comp-ano-a').value = cm > 0 ? cy : cy - 1;
+  document.getElementById('comp-mes-b').value = cm;
+  document.getElementById('comp-ano-b').value = cy;
+}
+
+async function renderComparativo() {
+  const data = await apiGet();
+  const mA = parseInt(document.getElementById('comp-mes-a').value);
+  const yA = parseInt(document.getElementById('comp-ano-a').value);
+  const mB = parseInt(document.getElementById('comp-mes-b').value);
+  const yB = parseInt(document.getElementById('comp-ano-b').value);
+
+  const eA = data.entries[entryKey(yA, mA)];
+  const eB = data.entries[entryKey(yB, mB)];
+  const container = document.getElementById('comp-result');
+
+  if (!eA && !eB) {
+    container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:60px;font-size:14px;">Nenhum dado encontrado para os meses selecionados.</div>';
     return;
   }
 
-  tbody.innerHTML = keys.map(k => {
-    const e = data.entries[k];
-    const lucro = e.lucro !== undefined ? e.lucro : (e.fat - (e.custo || 0));
-    const lm = e.qtd > 0 ? lucro / e.qtd : 0;
-    const [yr, mo] = k.split('-');
-    const mName = MONTHS_FULL[parseInt(mo)];
+  const nA = `${MONTHS_FULL[mA]} ${yA}`;
+  const nB = `${MONTHS_FULL[mB]} ${yB}`;
+
+  function val(e, field) { return e ? (e[field] || 0) : null; }
+  function margem(e) { return e && e.fat > 0 ? (e.lucro / e.fat * 100) : null; }
+  function lun(e) { return e && e.qtd > 0 ? e.lucro / e.qtd : null; }
+
+  function diffBadge(a, b, isPercent = false) {
+    if (a === null || b === null) return '';
+    const diff = b - a;
+    const pct = a !== 0 ? ((b - a) / Math.abs(a) * 100) : null;
+    const arrow = diff >= 0 ? '▲' : '▼';
+    const cls = diff >= 0 ? 'var(--accent3)' : 'var(--danger)';
+    const label = isPercent
+      ? `${arrow} ${diff >= 0 ? '+' : ''}${diff.toFixed(1)}pp`
+      : pct !== null ? `${arrow} ${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%` : `${arrow}`;
+    return `<span style="font-size:12px;color:${cls};font-weight:600;">${label}</span>`;
+  }
+
+  function row(label, vA, vB, fmtFn = fmt, isPercent = false) {
+    const fA = vA !== null ? fmtFn(vA) : '<span style="color:var(--muted)">—</span>';
+    const fB = vB !== null ? fmtFn(vB) : '<span style="color:var(--muted)">—</span>';
     return `<tr>
-      <td class="month-name">${mName} ${yr}</td>
-      <td>${fmt(e.fat)}</td>
-      <td style="color:${lucro >= 0 ? 'var(--accent3)' : 'var(--danger)'}">${fmt(lucro)}</td>
-      <td>${e.qtd}</td>
-      <td>${fmt(lm)}</td>
-      <td><button onclick="deleteEntry('${k}')" style="background:rgba(239,68,68,0.15);color:var(--danger);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;">✕</button></td>
+      <td style="color:var(--dim);font-family:'Inter',sans-serif;font-size:13px;padding:12px 20px;">${label}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--accent);padding:12px 20px;">${fA}</td>
+      <td style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#A78BFA;padding:12px 20px;">${fB}</td>
+      <td style="padding:12px 20px;">${diffBadge(vA, vB, isPercent)}</td>
     </tr>`;
-  }).join('');
+  }
+
+  const fatA = val(eA,'fat'), fatB = val(eB,'fat');
+  const lucroA = val(eA,'lucro'), lucroB = val(eB,'lucro');
+  const qtdA = val(eA,'qtd'), qtdB = val(eB,'qtd');
+  const margemA = margem(eA), margemB = margem(eB);
+  const lunA = lun(eA), lunB = lun(eB);
+
+  // Mini cards de destaque
+  function mini(label, vA, vB, fmtFn = fmt) {
+    const hasA = vA !== null, hasB = vB !== null;
+    const winner = hasA && hasB ? (vB > vA ? 'B' : vB < vA ? 'A' : '=') : null;
+    return `<div class="kpi-card" style="padding:16px;">
+      <div class="kpi-label">${label}</div>
+      <div style="display:flex;gap:12px;margin-top:8px;align-items:flex-end;">
+        <div>
+          <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${nA}</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--accent)">${hasA ? fmtFn(vA) : '—'}</div>
+        </div>
+        <div style="color:var(--muted);font-size:16px;padding-bottom:2px;">vs</div>
+        <div>
+          <div style="font-size:10px;color:#A78BFA;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">${nB}</div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:#A78BFA">${hasB ? fmtFn(vB) : '—'}</div>
+        </div>
+        ${winner ? `<div style="margin-left:auto;font-size:11px;font-weight:700;padding:3px 8px;border-radius:5px;background:${winner==='=' ? 'var(--border)' : 'rgba(16,185,129,0.15)'};color:${winner==='=' ? 'var(--muted)' : 'var(--accent3)'};">${winner === '=' ? 'Empate' : 'Melhor: ' + (winner === 'A' ? nA : nB)}</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = `
+    <div class="kpi-grid" style="margin-bottom:20px;">
+      ${mini('Faturamento', fatA, fatB)}
+      ${mini('Lucro', lucroA, lucroB)}
+      ${mini('Aparelhos Vendidos', qtdA, qtdB, n => n)}
+      ${mini('Lucro por Aparelho', lunA, lunB)}
+    </div>
+    <div class="data-card">
+      <div class="data-card-header">
+        <div><div class="data-card-title">Comparativo Detalhado</div><div class="data-card-sub">${nA} vs ${nB}</div></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th style="color:var(--accent);">${nA}</th>
+            <th style="color:#A78BFA;">${nB}</th>
+            <th>Variação (B vs A)</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${row('Faturamento', fatA, fatB)}
+          ${row('Lucro Líquido', lucroA, lucroB)}
+          ${row('Margem de Lucro', margemA, margemB, n => n !== null ? n.toFixed(1)+'%' : '—', true)}
+          ${row('Aparelhos Vendidos', qtdA, qtdB, n => n)}
+          ${row('Lucro por Aparelho', lunA, lunB)}
+        </tbody>
+      </table>
+    </div>`;
 }
+
+// ─── ENTRADAS (mantido para compatibilidade, mas sem aba) ────────────────────
+
+async function saveEntry() {}
+async function deleteEntry(key) {}
+async function renderEntries() {}
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
 initDashboardSelectors();
-initEntradas();
+initAnualSelector();
+initComparativoSelectors();
 renderDashboard();
 </script>
 </body>
