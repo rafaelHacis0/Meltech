@@ -1350,7 +1350,7 @@ function initEntradas() {
   document.getElementById('inp-mes').value = now.getMonth();
   const yearSel = document.getElementById('inp-ano');
   yearSel.innerHTML = '';
-  [cy - 2, cy - 1, cy, cy + 1].forEach(y => {
+  [cy - 3, cy - 2, cy - 1, cy, cy+ 1 ].forEach(y => {
     const o = document.createElement('option');
     o.value = y; o.textContent = y;
     if (y === cy) o.selected = true;
