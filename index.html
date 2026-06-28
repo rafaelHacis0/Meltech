@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meltech iPhones — Dashboard Financeiro</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080C14;
+    --surface: #0D1421;
+    --surface2: #111827;
+    --border: #1E2D45;
+    --accent: #00D4FF;
+    --accent2: #7C3AED;
+    --accent3: #10B981;
+    --danger: #EF4444;
+    --warn: #F59E0B;
+    --text: #E2E8F0;
+    --muted: #64748B;
+    --dim: #94A3B8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+
+  .logo h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .logo span {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .current-month-badge {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+  }
+
+  .tab-nav {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+  }
+
+  .tab-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 7px 16px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .tab-btn.active {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .tab-btn:hover:not(.active) { color: var(--text); background: var(--border); }
+
+  /* VIEWS */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    cursor: default;
+  }
+
+  .kpi-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .kpi-card:hover::after { opacity: 1; }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+  }
+
+  .kpi-value {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+    line-height: 1;
+  }
+
+  .kpi-value.cyan { color: var(--accent); }
+  .kpi-value.green { color: var(--accent3); }
+  .kpi-value.purple { color: #A78BFA; }
+  .kpi-value.white { color: var(--text); }
+
+  .kpi-delta {
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .kpi-delta.up { color: var(--accent3); }
+  .kpi-delta.down { color: var(--danger); }
+  .kpi-delta.neutral { color: var(--muted); }
+
+  .kpi-icon {
+    position: absolute;
+    top: 16px; right: 16px;
+    font-size: 22px;
+    opacity: 0.15;
+  }
+
+  /* META PROGRESS */
+  .meta-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .meta-section::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(0,212,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .meta-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+  }
+
+  .meta-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .meta-title span {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 2px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .meta-numbers {
+    text-align: right;
+  }
+
+  .meta-current {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+
+  .meta-goal {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .progress-bar-wrap {
+    background: var(--bg);
+    border-radius: 999px;
+    height: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .progress-bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.25) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .meta-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .meta-stat {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .meta-stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .meta-stat-val {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .meta-stat-val.accent { color: var(--accent); }
+  .meta-stat-val.green { color: var(--accent3); }
+  .meta-stat-val.warn { color: var(--warn); }
+
+  /* BOTTOM GRID */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* TABLE */
+  .data-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .data-card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .data-card-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .data-card-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  table { width: 100%; border-collapse: collapse; }
+
+  thead th {
+    padding: 10px 20px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    text-align: left;
+    background: var(--bg);
+  }
+
+  tbody tr {
+    border-top: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: rgba(0,212,255,0.04); }
+  tbody tr.current-month { background: rgba(0,212,255,0.06); }
+  tbody tr.current-month td { color: var(--accent); }
+  tbody tr.current-month td:first-child { font-weight: 600; }
+
+  td {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  td.month-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  .yoy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 11px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+  }
+
+  .yoy-badge.up { background: rgba(16,185,129,0.15); color: var(--accent3); }
+  .yoy-badge.down { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .yoy-badge.na { background: var(--border); color: var(--muted); }
+
+  /* CHART */
+  .chart-wrap {
+    padding: 20px;
+  }
+
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 140px;
+  }
+
+  .bar-group {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .bar {
+    flex: 1;
+    border-radius: 4px 4px 0 0;
+    transition: opacity 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .bar:hover { opacity: 0.8; }
+
+  .bar.current { background: linear-gradient(180deg, var(--accent), rgba(0,212,255,0.4)); }
+  .bar.prev { background: linear-gradient(180deg, rgba(124,58,237,0.6), rgba(124,58,237,0.2)); }
+
+  .bar-labels {
+    display: flex;
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .bar-label {
+    flex: 1;
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .chart-legend {
+    display: flex;
+    gap: 16px;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+  }
+
+  .legend-dot.current { background: var(--accent); }
+  .legend-dot.prev { background: rgba(124,58,237,0.7); }
+
+  /* ======= METAS VIEW ======= */
+  .metas-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+
+  .meta-month-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .meta-month-card.is-current {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+
+  .meta-month-card.is-past {
+    opacity: 0.75;
+  }
+
+  .meta-month-name {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .meta-month-name .year-label {
+    font-size: 10px;
+    background: var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    color: var(--dim);
+  }
+
+  .meta-month-name .current-badge {
+    font-size: 10px;
+    background: var(--accent);
+    color: #000;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-weight: 700;
+  }
+
+  .meta-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .meta-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-field label {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .meta-field input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    padding: 8px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    width: 100%;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  .meta-field input:focus {
+    border-color: var(--accent);
+  }
+
+  .meta-save-btn {
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: #000;
+    border: none;
+    border-radius: 7px;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: opacity 0.2s;
+    margin-top: 4px;
+  }
+
+  .meta-save-btn:hover { opacity: 0.85; }
+
+  .meta-progress-mini {
+    height: 4px;
+    background: var(--bg);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 10px;
+  }
+
+  .meta-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    border-radius: 999px;
+  }
+
+  .meta-pct-label {
+    font-size: 11px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  /* ======= ENTRADAS VIEW ======= */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary:hover { opacity: 0.85; }
+
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-field label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+  }
+
+  .form-field input, .form-field select {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-field select {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .form-field input:focus, .form-field select:focus {
+    border-color: var(--accent);
+  }
+
+  .entries-list {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent3);
+    color: #000;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 100;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .bottom-grid { grid-template-columns: 1fr; }
+    .metas-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr 1fr; }
+    .meta-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 600px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .metas-grid { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .tab-btn { padding: 7px 10px; font-size: 12px; }
+    header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .kpi-value { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">📱</div>
+      <h1>Meltech iPhones <span>Central Financeira</span></h1>
+    </div>
+    <div class="header-right">
+      <div class="month-selector">
+        <select id="sel-mes" onchange="renderDashboard()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px 0 0 8px;color:var(--accent);padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;cursor:pointer;border-right:none;">
+          <option value="0">Janeiro</option>
+          <option value="1">Fevereiro</option>
+          <option value="2">Março</option>
+          <option value="3">Abril</option>
+          <option value="4">Maio</option>
+          <option value="5">Junho</option>
+          <option value="6">Julho</option>
+          <option value="7">Agosto</option>
+          <option value="8">Setembro</option>
+          <option value="9">Outubro</option>
+          <option value="10">Novembro</option>
+          <option value="11">Dezembro</option>
+        </select>
+        <select id="sel-ano" onchange="renderDashboard()" style="background:var(--surface);border:1px solid var(--border);border-radius:0 8px 8px 0;color:var(--accent);padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;cursor:pointer;"></select>
+      </div>
+      <nav class="tab-nav">
+        <button class="tab-btn active" onclick="showView('dashboard')">Dashboard</button>
+        <button class="tab-btn" onclick="showView('metas')">Metas</button>
+        <button class="tab-btn" onclick="showView('entradas')">Lançamentos</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===== DASHBOARD VIEW ===== -->
+  <div class="view active" id="view-dashboard">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Faturamento do Mês</div>
+        <div class="kpi-value cyan" id="kpi-faturamento">R$ 0</div>
+        <div class="kpi-delta" id="delta-faturamento">— Sem dados anteriores</div>
+        <div class="kpi-icon">💰</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Lucro Líquido</div>
+        <div class="kpi-value green" id="kpi-lucro">R$ 0</div>
+        <div class="kpi-delta" id="delta-lucro">— Sem dados anteriores</div>
+        <div class="kpi-icon">📈</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Lucro Médio / Aparelho</div>
+        <div class="kpi-value purple" id="kpi-lucro-medio">R$ 0</div>
+        <div class="kpi-delta" id="delta-lucro-medio">— Sem dados</div>
+        <div class="kpi-icon">📱</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Aparelhos Vendidos</div>
+        <div class="kpi-value white" id="kpi-qtd">0</div>
+        <div class="kpi-delta" id="delta-qtd">— Sem dados anteriores</div>
+        <div class="kpi-icon">🔢</div>
+      </div>
+    </div>
+
+    <!-- META PROGRESS -->
+    <div class="meta-section">
+      <div class="meta-header">
+        <div class="meta-title">
+          Progresso da Meta de Lucro
+          <span id="meta-subtitle">Configure a meta na aba Metas</span>
+        </div>
+        <div class="meta-numbers">
+          <div class="meta-current" id="meta-current-val">R$ 0</div>
+          <div class="meta-goal" id="meta-goal-label">Meta: R$ 0</div>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="meta-progress-bar" style="width: 0%"></div>
+      </div>
+      <div class="meta-stats">
+        <div class="meta-stat">
+          <div class="meta-stat-label">Lucro Atual</div>
+          <div class="meta-stat-val accent" id="meta-pct">0%</div>
+        </div>
+        <div class="meta-stat">
+          <div class="meta-stat-label">Falta p/ Meta de Lucro</div>
+          <div class="meta-stat-val warn" id="meta-falta">R$ 0</div>
+        </div>
+        <div class="meta-stat">
+          <div class="meta-stat-label">Dias Restantes</div>
+          <div class="meta-stat-val" id="meta-dias">—</div>
+        </div>
+        <div class="meta-stat">
+          <div class="meta-stat-label">Ritmo Necessário/Dia</div>
+          <div class="meta-stat-val" id="meta-ritmo">R$ 0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- META ALTA +20% -->
+    <div class="meta-section" style="margin-bottom:20px;">
+      <div style="position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%);pointer-events:none;"></div>
+      <div class="meta-header">
+        <div class="meta-title">
+          🎯 Meta Alta <span style="color:var(--warn);font-weight:600;font-size:11px;">+20% acima da meta base</span>
+          <span id="meta-alta-subtitle">Configure a meta na aba Metas</span>
+        </div>
+        <div class="meta-numbers">
+          <div class="meta-current" id="meta-alta-current-val" style="color:var(--warn);">R$ 0</div>
+          <div class="meta-goal" id="meta-alta-goal-label">Meta Alta: R$ 0</div>
+        </div>
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="meta-alta-progress-bar" style="width:0%;background:linear-gradient(90deg,#B45309,var(--warn));"></div>
+      </div>
+      <div class="meta-stats">
+        <div class="meta-stat">
+          <div class="meta-stat-label">Lucro Atual</div>
+          <div class="meta-stat-val warn" id="meta-alta-pct">0%</div>
+        </div>
+        <div class="meta-stat">
+          <div class="meta-stat-label">Falta p/ Meta Alta</div>
+          <div class="meta-stat-val warn" id="meta-alta-falta">—</div>
+        </div>
+        <div class="meta-stat">
+          <div class="meta-stat-label">Dias Restantes</div>
+          <div class="meta-stat-val" id="meta-alta-dias">—</div>
+        </div>
+        <div class="meta-stat">
+          <div class="meta-stat-label">Ritmo Necessário/Dia</div>
+          <div class="meta-stat-val" id="meta-alta-ritmo">—</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- BOTTOM GRID -->
+    <div class="bottom-grid">
+
+      <!-- TABLE HISTÓRICO -->
+      <div class="data-card">
+        <div class="data-card-header">
+          <div>
+            <div class="data-card-title">Histórico Mensal</div>
+            <div class="data-card-sub">Faturamento, lucro e comparativo YoY</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Faturamento</th>
+              <th>Lucro</th>
+              <th>vs Ano Ant.</th>
+            </tr>
+          </thead>
+          <tbody id="historico-tbody">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">Nenhum dado lançado ainda.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- BAR CHART -->
+      <div class="data-card">
+        <div class="data-card-header">
+          <div>
+            <div class="data-card-title">Lucro Mensal</div>
+            <div class="data-card-sub">Ano atual vs ano anterior</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <div class="bar-chart" id="bar-chart"></div>
+          <div class="bar-labels" id="bar-labels"></div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot current"></div> Ano atual</div>
+          <div class="legend-item"><div class="legend-dot prev"></div> Ano anterior</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== METAS VIEW ===== -->
+  <div class="view" id="view-metas">
+    <div class="section-header">
+      <div class="section-title">Metas por Mês</div>
+    </div>
+    <div class="metas-grid" id="metas-grid"></div>
+  </div>
+
+  <!-- ===== ENTRADAS VIEW ===== -->
+  <div class="view" id="view-entradas">
+    <div class="section-header">
+      <div class="section-title">Lançar Dados do Mês</div>
+    </div>
+
+    <div class="form-card">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Mês</label>
+          <select id="inp-mes">
+            <option value="0">Janeiro</option>
+            <option value="1">Fevereiro</option>
+            <option value="2">Março</option>
+            <option value="3">Abril</option>
+            <option value="4">Maio</option>
+            <option value="5">Junho</option>
+            <option value="6">Julho</option>
+            <option value="7">Agosto</option>
+            <option value="8">Setembro</option>
+            <option value="9">Outubro</option>
+            <option value="10">Novembro</option>
+            <option value="11">Dezembro</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Ano</label>
+          <select id="inp-ano"></select>
+        </div>
+        <div class="form-field">
+          <label>Faturamento (R$)</label>
+          <input type="number" id="inp-fat" placeholder="Ex: 50000" min="0">
+        </div>
+        <div class="form-field">
+          <label>Lucro (R$)</label>
+          <input type="number" id="inp-lucro" placeholder="Ex: 8000" min="0">
+        </div>
+        <div class="form-field">
+          <label>Qtd Aparelhos Vendidos</label>
+          <input type="number" id="inp-qtd" placeholder="Ex: 30" min="0">
+        </div>
+        <div class="form-field" style="justify-content: flex-end;">
+          <label>&nbsp;</label>
+          <button class="btn-primary" onclick="saveEntry()">✅ Salvar Lançamento</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="entries-list">
+      <div class="data-card-header">
+        <div><div class="data-card-title">Lançamentos Salvos</div></div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Mês/Ano</th>
+            <th>Faturamento</th>
+            <th>Lucro</th>
+            <th>Qtd</th>
+            <th>Lucro/Un</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="entries-tbody">
+          <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Nenhum lançamento ainda.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(8,12,20,0.75);z-index:200;align-items:center;justify-content:center;flex-direction:column;gap:16px;">
+  <div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <div style="font-size:13px;color:var(--dim);font-family:'JetBrains Mono',monospace;">Sincronizando com a planilha...</div>
+</div>
+<style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbxhHyoPQ-CMhdzL2mFflS9hw7PpTB0uBVMjHuF6L2S-WIyLo2l3vlULYmErdBD2ym2fLw/exec';
+
+const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MONTHS_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+// Cache local para não bater na API a cada render
+let _cache = null;
+
+function entryKey(year, month) { return `${year}-${String(month).padStart(2,'0')}`; }
+
+// ─── API LAYER ────────────────────────────────────────────────────────────────
+
+async function apiGet() {
+  if (_cache) return _cache;
+  setLoading(true);
+  try {
+    const res = await fetch(API_URL);
+    const json = await res.json();
+    _cache = { entries: json.dados || {}, metas: json.metas || {} };
+    return _cache;
+  } catch (err) {
+    showToast('❌ Erro ao carregar dados da planilha.');
+    return { entries: {}, metas: {} };
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function apiPost(body) {
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    });
+    _cache = null; // invalida cache após escrita
+  } catch (err) {
+    showToast('❌ Erro ao salvar na planilha.');
+    throw err;
+  }
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+
+function fmt(n) {
+  if (n === null || n === undefined || isNaN(n)) return 'R$ —';
+  return 'R$ ' + Number(n).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function daysInMonth(year, month) { return new Date(year, month + 1, 0).getDate(); }
+
+function daysRemainingInMonth(year, month) {
+  const now = new Date();
+  if (year === now.getFullYear() && month === now.getMonth()) {
+    return daysInMonth(year, month) - now.getDate();
+  }
+  return 0;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function setLoading(on) {
+  document.getElementById('loading-overlay').style.display = on ? 'flex' : 'none';
+}
+
+// ─── VIEWS ────────────────────────────────────────────────────────────────────
+
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'metas') renderMetas();
+  if (name === 'entradas') renderEntries();
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+
+async function renderDashboard() {
+  const data = await apiGet();
+  const now = new Date();
+  const realY = now.getFullYear();
+  const realM = now.getMonth();
+
+  const selMes = document.getElementById('sel-mes');
+  const selAno = document.getElementById('sel-ano');
+  const cy = selAno ? parseInt(selAno.value) : realY;
+  const cm = selMes ? parseInt(selMes.value) : realM;
+
+  const curKey = entryKey(cy, cm);
+  const cur = data.entries[curKey] || null;
+
+  const fat = cur ? cur.fat : 0;
+  const lucro = cur ? cur.lucro : 0;
+  const qtd = cur ? cur.qtd : 0;
+  const lucroMedio = qtd > 0 ? lucro / qtd : 0;
+
+  const prevKey = entryKey(cy - 1, cm);
+  const prev = data.entries[prevKey] || null;
+
+  // KPIs
+  document.getElementById('kpi-faturamento').textContent = fmt(fat);
+  document.getElementById('kpi-lucro').textContent = fmt(lucro);
+  document.getElementById('kpi-lucro-medio').textContent = fmt(lucroMedio);
+  document.getElementById('kpi-qtd').textContent = qtd || '0';
+
+  function makeDelta(el, cur, prev) {
+    const el2 = document.getElementById(el);
+    if (!prev || !cur) { el2.className = 'kpi-delta neutral'; el2.innerHTML = '— Sem dado do ano anterior'; return; }
+    const diff = ((cur - prev) / prev * 100);
+    const arrow = diff >= 0 ? '▲' : '▼';
+    const cls = diff >= 0 ? 'up' : 'down';
+    el2.className = 'kpi-delta ' + cls;
+    el2.innerHTML = `${arrow} ${Math.abs(diff).toFixed(1)}% vs ${MONTHS[cm]}/${cy-1}`;
+  }
+
+  makeDelta('delta-faturamento', fat, prev?.fat);
+  makeDelta('delta-lucro', lucro, prev?.lucro);
+  const prevLucroMedio = prev && prev.qtd > 0 ? prev.lucro / prev.qtd : null;
+  makeDelta('delta-lucro-medio', lucroMedio, prevLucroMedio);
+  makeDelta('delta-qtd', qtd, prev?.qtd);
+
+  // META (baseada em lucro)
+  const metaKey = `${cm}`;
+  const meta = data.metas[metaKey] ? data.metas[metaKey][cy] || 0 : 0;
+  const progress = meta > 0 ? (lucro / meta) * 100 : 0;
+  const falta = Math.max(meta - lucro, 0);
+  const diasRest = daysRemainingInMonth(cy, cm);
+  const ritmo = diasRest > 0 && falta > 0 ? falta / diasRest : 0;
+
+  document.getElementById('meta-current-val').textContent = fmt(lucro);
+  document.getElementById('meta-goal-label').textContent = 'Meta de Lucro: ' + fmt(meta);
+  document.getElementById('meta-pct').textContent = meta > 0 ? progress.toFixed(1) + '%' : '—';
+  document.getElementById('meta-falta').textContent = meta > 0 ? fmt(falta) : '—';
+  document.getElementById('meta-dias').textContent = diasRest + ' dias';
+  document.getElementById('meta-ritmo').textContent = ritmo > 0 ? fmt(ritmo) + '/dia' : '—';
+  document.getElementById('meta-subtitle').textContent =
+    meta > 0 ? `${MONTHS_FULL[cm]} ${cy} — Meta de Lucro: ${fmt(meta)}` : 'Configure a meta de lucro na aba Metas';
+
+  setTimeout(() => {
+    document.getElementById('meta-progress-bar').style.width = progress + '%';
+  }, 100);
+
+  // META ALTA (+20%)
+  const metaAlta = meta * 1.2;
+  const progressAlta = metaAlta > 0 ? (lucro / metaAlta) * 100 : 0;
+  const faltaAlta = Math.max(metaAlta - lucro, 0);
+  const ritmoAlta = diasRest > 0 && faltaAlta > 0 ? faltaAlta / diasRest : 0;
+
+  document.getElementById('meta-alta-current-val').textContent = fmt(lucro);
+  document.getElementById('meta-alta-goal-label').textContent = 'Meta Alta: ' + fmt(metaAlta);
+  document.getElementById('meta-alta-pct').textContent = metaAlta > 0 ? progressAlta.toFixed(1) + '%' : '—';
+  document.getElementById('meta-alta-falta').textContent = metaAlta > 0 ? fmt(faltaAlta) : '—';
+  document.getElementById('meta-alta-dias').textContent = diasRest + ' dias';
+  document.getElementById('meta-alta-ritmo').textContent = ritmoAlta > 0 ? fmt(ritmoAlta) + '/dia' : '—';
+  document.getElementById('meta-alta-subtitle').textContent =
+    metaAlta > 0 ? `${MONTHS_FULL[cm]} ${cy} — Meta Alta: ${fmt(metaAlta)}` : 'Configure a meta base na aba Metas';
+
+  setTimeout(() => {
+    document.getElementById('meta-alta-progress-bar').style.width = progressAlta + '%';
+  }, 100);
+
+  renderHistorico(data, cy, cm);
+  renderBarChart(data, cy);
+}
+
+function renderHistorico(data, cy, cm) {
+  const tbody = document.getElementById('historico-tbody');
+  const rows = [];
+
+  for (let m = 11; m >= 0; m--) {
+    const key = entryKey(cy, m);
+    const prevKey = entryKey(cy - 1, m);
+    const e = data.entries[key];
+    const p = data.entries[prevKey];
+    if (!e) continue;
+
+    const fat = e.fat;
+    const lucro = e.lucro || 0;
+    const prevFat = p ? p.fat : null;
+    let yoyBadge = '<span class="yoy-badge na">N/A</span>';
+    if (prevFat !== null && prevFat > 0) {
+      const g = ((fat - prevFat) / prevFat * 100);
+      const cls = g >= 0 ? 'up' : 'down';
+      const arrow = g >= 0 ? '▲' : '▼';
+      yoyBadge = `<span class="yoy-badge ${cls}">${arrow} ${Math.abs(g).toFixed(0)}%</span>`;
+    }
+
+    const isCur = (m === cm);
+    rows.push(`<tr class="${isCur ? 'current-month' : ''}">
+      <td class="month-name">${MONTHS_FULL[m]} ${cy}${isCur ? ' ●' : ''}</td>
+      <td>${fmt(fat)}</td>
+      <td>${fmt(lucro)}</td>
+      <td>${yoyBadge}</td>
+    </tr>`);
+  }
+
+  tbody.innerHTML = rows.length
+    ? rows.join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">Nenhum dado lançado ainda.</td></tr>';
+}
+
+function renderBarChart(data, cy) {
+  const maxVal = Math.max(1, ...MONTHS.map((_, m) => {
+    const a = data.entries[entryKey(cy, m)]?.lucro || 0;
+    const b = data.entries[entryKey(cy - 1, m)]?.lucro || 0;
+    return Math.max(a, b);
+  }));
+
+  const chart = document.getElementById('bar-chart');
+  const labels = document.getElementById('bar-labels');
+  chart.innerHTML = ''; labels.innerHTML = '';
+
+  MONTHS.forEach((label, m) => {
+    const cur = data.entries[entryKey(cy, m)]?.lucro || 0;
+    const prev = data.entries[entryKey(cy - 1, m)]?.lucro || 0;
+    const hCur = Math.max((cur / maxVal) * 130, cur > 0 ? 4 : 0);
+    const hPrev = Math.max((prev / maxVal) * 130, prev > 0 ? 4 : 0);
+
+    chart.innerHTML += `<div class="bar-group">
+      <div class="bar prev" style="height:${hPrev}px" title="${MONTHS_FULL[m]} ${cy-1}: ${fmt(prev)}"></div>
+      <div class="bar current" style="height:${hCur}px" title="${MONTHS_FULL[m]} ${cy}: ${fmt(cur)}"></div>
+    </div>`;
+    labels.innerHTML += `<div class="bar-label">${label}</div>`;
+  });
+}
+
+// ─── METAS ────────────────────────────────────────────────────────────────────
+
+async function renderMetas() {
+  const data = await apiGet();
+  const now = new Date();
+  const cy = now.getFullYear();
+  const cm = now.getMonth();
+  const years = [cy - 1, cy, cy + 1];
+  const grid = document.getElementById('metas-grid');
+  grid.innerHTML = '';
+
+  MONTHS_FULL.forEach((name, m) => {
+    const isCur = m === cm;
+    const isPast = m < cm;
+    const metaThisMonth = data.metas[m] || {};
+    const fatKey = entryKey(cy, m);
+    const metaVal = metaThisMonth[cy] || 0;
+    const lucroEntry = data.entries[fatKey]?.lucro || 0;
+    const pctVal = metaVal > 0 ? Math.min((lucroEntry / metaVal) * 100, 100) : 0;
+
+    const badge = isCur
+      ? `<span class="current-badge">Atual</span>`
+      : `<span class="year-label">${cy}</span>`;
+
+    const yearInputs = years.map(y => `
+      <div class="meta-field">
+        <label>${y}</label>
+        <input type="number" id="meta-${m}-${y}" placeholder="R$ meta" value="${metaThisMonth[y] || ''}" min="0">
+      </div>`).join('');
+
+    const progressBlock = metaVal > 0 ? `
+      <div class="meta-progress-mini">
+        <div class="meta-progress-fill" style="width:${pctVal}%"></div>
+      </div>
+      <div class="meta-pct-label">${pctVal.toFixed(0)}% atingido (${fmt(lucroEntry)} lucro / meta ${fmt(metaVal)})</div>
+    ` : '';
+
+    grid.innerHTML += `
+      <div class="meta-month-card ${isCur ? 'is-current' : ''} ${isPast && !isCur ? 'is-past' : ''}">
+        <div class="meta-month-name">${name.toUpperCase()} ${badge}</div>
+        <div class="meta-input-row">
+          ${yearInputs}
+          <button class="meta-save-btn" onclick="saveMeta(${m}, [${years.join(',')}])">Salvar Metas</button>
+          ${progressBlock}
+        </div>
+      </div>`;
+  });
+}
+
+async function saveMeta(month, years) {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+  try {
+    for (const y of years) {
+      const val = parseFloat(document.getElementById(`meta-${month}-${y}`)?.value || 0);
+      if (!isNaN(val) && val > 0) {
+        await apiPost({ action: 'save_meta', month, year: y, value: val });
+      }
+    }
+    showToast('✅ Meta salva na planilha!');
+    await renderMetas();
+  } catch {
+    // erro já mostrado no apiPost
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Salvar Metas';
+  }
+}
+
+// ─── ENTRADAS ─────────────────────────────────────────────────────────────────
+
+function initDashboardSelectors() {
+  const now = new Date();
+  const cy = now.getFullYear();
+  const cm = now.getMonth();
+  document.getElementById('sel-mes').value = cm;
+  const selAno = document.getElementById('sel-ano');
+  selAno.innerHTML = '';
+  [cy - 2, cy - 1, cy, cy + 1].forEach(y => {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    if (y === cy) o.selected = true;
+    selAno.appendChild(o);
+  });
+}
+
+function initEntradas() {
+  const now = new Date();
+  const cy = now.getFullYear();
+  document.getElementById('inp-mes').value = now.getMonth();
+  const yearSel = document.getElementById('inp-ano');
+  yearSel.innerHTML = '';
+  [cy - 2, cy - 1, cy, cy + 1].forEach(y => {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y;
+    if (y === cy) o.selected = true;
+    yearSel.appendChild(o);
+  });
+}
+
+async function saveEntry() {
+  const m = parseInt(document.getElementById('inp-mes').value);
+  const y = parseInt(document.getElementById('inp-ano').value);
+  const fat = parseFloat(document.getElementById('inp-fat').value || 0);
+  const lucro = parseFloat(document.getElementById('inp-lucro').value || 0);
+  const qtd = parseInt(document.getElementById('inp-qtd').value || 0);
+
+  if (!fat && !lucro && !qtd) { showToast('⚠️ Preencha ao menos um valor.'); return; }
+
+  const btn = document.querySelector('[onclick="saveEntry()"]');
+  btn.disabled = true;
+  btn.textContent = 'Salvando...';
+
+  try {
+    const key = entryKey(y, m);
+    await apiPost({ action: 'save_entry', entry: { key, fat, lucro, qtd } });
+    showToast('✅ Lançamento salvo na planilha!');
+    // limpa campos
+    document.getElementById('inp-fat').value = '';
+    document.getElementById('inp-lucro').value = '';
+    document.getElementById('inp-qtd').value = '';
+    await renderEntries();
+  } catch {
+    // erro já mostrado no apiPost
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✅ Salvar Lançamento';
+  }
+}
+
+async function deleteEntry(key) {
+  if (!confirm('Remover este lançamento da planilha?')) return;
+  try {
+    await apiPost({ action: 'delete_entry', key });
+    showToast('🗑️ Lançamento removido.');
+    await renderEntries();
+  } catch {}
+}
+
+async function renderEntries() {
+  const data = await apiGet();
+  const tbody = document.getElementById('entries-tbody');
+  const keys = Object.keys(data.entries).sort().reverse();
+
+  if (!keys.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Nenhum lançamento ainda.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = keys.map(k => {
+    const e = data.entries[k];
+    const lucro = e.lucro !== undefined ? e.lucro : (e.fat - (e.custo || 0));
+    const lm = e.qtd > 0 ? lucro / e.qtd : 0;
+    const [yr, mo] = k.split('-');
+    const mName = MONTHS_FULL[parseInt(mo)];
+    return `<tr>
+      <td class="month-name">${mName} ${yr}</td>
+      <td>${fmt(e.fat)}</td>
+      <td style="color:${lucro >= 0 ? 'var(--accent3)' : 'var(--danger)'}">${fmt(lucro)}</td>
+      <td>${e.qtd}</td>
+      <td>${fmt(lm)}</td>
+      <td><button onclick="deleteEntry('${k}')" style="background:rgba(239,68,68,0.15);color:var(--danger);border:none;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+
+initDashboardSelectors();
+initEntradas();
+renderDashboard();
+</script>
+</body>
+</html>
