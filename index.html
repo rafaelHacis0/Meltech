@@ -780,6 +780,7 @@
         <button class="tab-btn active" onclick="showView('dashboard')">Dashboard</button>
         <button class="tab-btn" onclick="showView('anual')">Visão Anual</button>
         <button class="tab-btn" onclick="showView('comparativo')">Comparativo</button>
+        <button class="tab-btn" onclick="showView('simulacao')">Simulação</button>
       </nav>
     </div>
   </header>
@@ -1042,6 +1043,78 @@
     </div>
   </div>
 
+  <!-- ===== SIMULAÇÃO DE PARCELAMENTO ===== -->
+  <div class="view" id="view-simulacao">
+    <div class="section-header" style="margin-bottom:20px;">
+      <div class="section-title">Simulação de Parcelamento</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start;">
+
+      <!-- Painel de controles -->
+      <div class="form-card" style="margin-bottom:0;">
+        <div class="form-field" style="margin-bottom:16px;">
+          <label>Valor do Produto (R$)</label>
+          <input type="number" id="sim-valor" placeholder="Ex: 3500" min="0" value="3500" oninput="renderSimulacao()">
+        </div>
+
+        <div class="form-field" style="margin-bottom:16px;">
+          <label>Maquininha</label>
+          <select id="sim-maquina" onchange="renderSimulacao()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none;width:100%;"></select>
+        </div>
+
+        <div class="form-field" style="margin-bottom:4px;">
+          <label>Repassar taxa ao cliente?</label>
+          <div style="display:flex;gap:8px;margin-top:4px;">
+            <button id="sim-toggle-sim" class="tab-btn active" style="flex:1;background:var(--accent);color:#000;" onclick="setRepasse(true)">Sim, repassar</button>
+            <button id="sim-toggle-nao" class="tab-btn" style="flex:1;" onclick="setRepasse(false)">Não, eu absorvo</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resultado -->
+      <div>
+        <div class="data-card">
+          <div class="data-card-header">
+            <div>
+              <div class="data-card-title">Todas as opções de parcelamento</div>
+              <div class="data-card-sub" id="sim-detalhe-sub"></div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Parcelamento</th>
+                <th>Taxa</th>
+                <th>Cliente Paga</th>
+                <th>Valor da Parcela</th>
+                <th>Juros (R$)</th>
+                <th>Você Recebe</th>
+              </tr>
+            </thead>
+            <tbody id="sim-detalhe-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Tabela de taxas configuradas -->
+        <div class="data-card" style="margin-top:16px;">
+          <div class="data-card-header">
+            <div>
+              <div class="data-card-title">Tabela de Taxas (vindas da planilha)</div>
+              <div class="data-card-sub">Edite as taxas diretamente na aba "Taxas" da sua planilha Google Sheets</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr id="sim-taxas-thead"></tr>
+            </thead>
+            <tbody id="sim-taxas-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1055,7 +1128,7 @@
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbyVQ3-ZPMEcnLzclQEWiNeeBA7omVH45vHhocxKow1yQyP0Ss4rDZ2enBMgU3AG6RahyQ/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxaLaEZT3EmT1agcI8WcZ_f6m7GfquZPztKp7OYKIMVYnXamLnlAhtAdbq7ia00DpfFVw/exec';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTHS_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -1073,7 +1146,7 @@ async function apiGet() {
   try {
     const res = await fetch(API_URL);
     const json = await res.json();
-    _cache = { entries: json.dados || {}, metas: json.metas || {} };
+    _cache = { entries: json.dados || {}, metas: json.metas || {}, taxas: json.taxas || {} };
     return _cache;
   } catch (err) {
     showToast('❌ Erro ao carregar dados da planilha.');
@@ -1134,6 +1207,7 @@ function showView(name) {
   if (name === 'dashboard') renderDashboard();
   if (name === 'anual') renderAnual();
   if (name === 'comparativo') renderComparativo();
+  if (name === 'simulacao') renderSimulacao();
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -1567,11 +1641,132 @@ async function saveEntry() {}
 async function deleteEntry(key) {}
 async function renderEntries() {}
 
+// ─── SIMULAÇÃO DE PARCELAMENTO ───────────────────────────────────────────────
+
+let _repasseTaxa = true; // default: repassa ao cliente
+
+function setRepasse(val) {
+  _repasseTaxa = val;
+  document.getElementById('sim-toggle-sim').classList.toggle('active', val);
+  document.getElementById('sim-toggle-sim').style.background = val ? 'var(--accent)' : '';
+  document.getElementById('sim-toggle-sim').style.color = val ? '#000' : '';
+  document.getElementById('sim-toggle-nao').classList.toggle('active', !val);
+  document.getElementById('sim-toggle-nao').style.background = !val ? 'var(--accent)' : '';
+  document.getElementById('sim-toggle-nao').style.color = !val ? '#000' : '';
+  renderSimulacao();
+}
+
+async function initSimulacao() {
+  const data = await apiGet();
+  const maquinas = Object.keys(data.taxas || {});
+  const sel = document.getElementById('sim-maquina');
+  sel.innerHTML = maquinas.length
+    ? maquinas.map(m => `<option value="${m}">${m}</option>`).join('')
+    : '<option value="">Nenhuma maquininha configurada na planilha</option>';
+}
+
+async function renderSimulacao() {
+  const data = await apiGet();
+  const taxas = data.taxas || {};
+  const maquina = document.getElementById('sim-maquina').value;
+  const valorProduto = parseFloat(document.getElementById('sim-valor').value || 0);
+  const taxasMaquina = taxas[maquina] || {};
+
+  document.getElementById('sim-detalhe-sub').textContent =
+    `${maquina || '—'} · Valor do produto: ${fmt(valorProduto)} · ${_repasseTaxa ? 'Taxa repassada ao cliente' : 'Taxa absorvida pela loja'}`;
+
+  // Monta lista de opções: débito + 1x até o maior número de parcelas cadastrado (até 21x)
+  const opcoes = [{ key: 'debito', label: 'Débito' }];
+  const maxParcela = Math.max(0, ...Object.keys(taxasMaquina).filter(k => k !== 'debito').map(Number));
+  for (let p = 1; p <= Math.max(maxParcela, 1); p++) {
+    opcoes.push({ key: p, label: p + 'x' });
+  }
+
+  const rows = opcoes.map(op => {
+    const taxaPct = taxasMaquina[op.key];
+    if (taxaPct === undefined || !valorProduto) {
+      return `<tr>
+        <td class="month-name">${op.label}</td>
+        <td style="color:var(--muted)">—</td>
+        <td style="color:var(--muted)">—</td>
+        <td style="color:var(--muted)">—</td>
+        <td style="color:var(--muted)">—</td>
+        <td style="color:var(--muted)">—</td>
+      </tr>`;
+    }
+
+    const parcelaCount = op.key === 'debito' ? 1 : op.key;
+    let valorCliente, valorRecebido, juros;
+
+    if (_repasseTaxa) {
+      valorCliente = valorProduto / (1 - taxaPct);
+      valorRecebido = valorProduto;
+      juros = valorCliente - valorProduto;
+    } else {
+      valorCliente = valorProduto;
+      juros = valorProduto * taxaPct;
+      valorRecebido = valorProduto - juros;
+    }
+
+    const valorParcela = valorCliente / parcelaCount;
+
+    return `<tr>
+      <td class="month-name">${op.label}</td>
+      <td>${(taxaPct * 100).toFixed(2)}%</td>
+      <td style="color:var(--accent);font-weight:600;">${fmt(valorCliente)}</td>
+      <td>${op.key === 'debito' ? fmt(valorCliente) : `${Math.ceil(valorParcela)} <span style="color:var(--muted);font-size:11px;">(${parcelaCount}x)</span>`}</td>
+      <td style="color:var(--warn);">${fmt(juros)}</td>
+      <td style="color:var(--accent3);font-weight:600;">${fmt(valorRecebido)}</td>
+    </tr>`;
+  });
+
+  document.getElementById('sim-detalhe-tbody').innerHTML = rows.join('');
+  renderTabelaTaxas(taxas, maquina);
+}
+
+function renderTabelaTaxas(taxas, maquinaAtiva) {
+  const maquinas = Object.keys(taxas);
+  const thead = document.getElementById('sim-taxas-thead');
+  const tbody = document.getElementById('sim-taxas-tbody');
+
+  if (!maquinas.length) {
+    thead.innerHTML = '<th>Parcela</th>';
+    tbody.innerHTML = '<tr><td style="text-align:center;color:var(--muted);padding:20px;">Nenhuma taxa cadastrada. Crie a aba "Taxas" na planilha com colunas: maquina | parcela | taxa</td></tr>';
+    return;
+  }
+
+  thead.innerHTML = '<th>Parcela</th>' + maquinas.map(m => `<th>${m}</th>`).join('');
+  const maxParcela = Math.max(1, ...maquinas.flatMap(m => Object.keys(taxas[m]).filter(k => k !== 'debito').map(Number)));
+
+  const rows = [];
+  rows.push(`<tr>
+    <td class="month-name">Débito</td>
+    ${maquinas.map(m => {
+      const t = taxas[m]?.['debito'];
+      const isActiveCell = m === maquinaAtiva;
+      return `<td style="${isActiveCell ? 'color:var(--accent);font-weight:700;' : ''}">${t !== undefined ? (t*100).toFixed(2) + '%' : '—'}</td>`;
+    }).join('')}
+  </tr>`);
+
+  for (let p = 1; p <= maxParcela; p++) {
+    rows.push(`<tr>
+      <td class="month-name">${p}x</td>
+      ${maquinas.map(m => {
+        const t = taxas[m]?.[p];
+        const isActiveCell = m === maquinaAtiva;
+        return `<td style="${isActiveCell ? 'color:var(--accent);font-weight:700;' : ''}">${t !== undefined ? (t*100).toFixed(2) + '%' : '—'}</td>`;
+      }).join('')}
+    </tr>`);
+  }
+  tbody.innerHTML = rows.join('');
+}
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 
 initDashboardSelectors();
 initAnualSelector();
 initComparativoSelectors();
+initSimulacao();
 renderDashboard();
 </script>
 </body>
