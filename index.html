@@ -781,9 +781,135 @@
     .kpi-grid { grid-template-columns: 1fr; }
     .meta-stats { grid-template-columns: 1fr 1fr; }
   }
+
+  /* LOGIN */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #login-screen::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%; max-width: 380px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 0 60px rgba(0,212,255,0.07);
+  }
+  .login-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 20px 20px 0 0;
+  }
+  .login-logo {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 32px;
+  }
+  .login-logo .logo-icon { width: 44px; height: 44px; border-radius: 12px; font-size: 20px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display:flex;align-items:center;justify-content:center; }
+  .login-logo h2 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; }
+  .login-logo span { display: block; font-size: 11px; color: var(--muted); font-weight: 400; }
+  .login-field { margin-bottom: 16px; }
+  .login-field label { display: block; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 7px; font-weight: 500; }
+  .login-field input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text); padding: 12px 14px;
+    font-family: 'Inter', sans-serif; font-size: 14px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-field input:focus { border-color: var(--accent); }
+  .login-btn {
+    width: 100%; background: linear-gradient(135deg, var(--accent), #0099cc);
+    border: none; border-radius: 10px; color: #000;
+    padding: 13px; font-size: 14px; font-weight: 700;
+    cursor: pointer; margin-top: 8px; font-family: 'Inter', sans-serif;
+    transition: opacity 0.2s; letter-spacing: 0.3px;
+  }
+  .login-btn:hover { opacity: 0.88; }
+  .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .login-error {
+    color: var(--danger); font-size: 13px; text-align: center;
+    margin-top: 12px; min-height: 20px;
+  }
+  .login-user-badge {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 12px; color: var(--dim); cursor: default;
+  }
+  .logout-btn {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 7px; padding: 5px 10px; font-size: 11px; cursor: pointer;
+    font-family: 'Inter', sans-serif; transition: all 0.2s;
+  }
+  .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+  /* ANUAL INNER TABS */
+  .inner-tab-nav {
+    display: flex; gap: 6px; margin-bottom: 20px;
+    border-bottom: 1px solid var(--border); padding-bottom: 0;
+    overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .inner-tab-nav::-webkit-scrollbar { display: none; }
+  .inner-tab-btn {
+    background: none; border: none; color: var(--muted);
+    padding: 8px 16px; font-size: 13px; font-weight: 500;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    white-space: nowrap; transition: all 0.2s;
+  }
+  .inner-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .inner-tab-btn:hover:not(.active) { color: var(--text); }
+  .inner-view { display: none; }
+  .inner-view.active { display: block; }
+
+  /* TRIMESTRE */
+  .trim-month-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px; margin-bottom: 14px;
+  }
+  .trim-month-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
+  }
+  .trim-month-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; }
+  .trim-bar-wrap { background: var(--accent2); border-radius: 6px; height: 8px; overflow: hidden; }
+  .trim-bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
 </style>
 </head>
 <body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">📱</div>
+      <h2>Meltech iPhones <span>Dashboard Financeiro</span></h2>
+    </div>
+    <div class="login-field">
+      <label>Usuário</label>
+      <input type="text" id="login-user" placeholder="Seu usuário" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus()">
+    </div>
+    <div class="login-field">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
 
 <div class="wrapper">
 
@@ -794,6 +920,10 @@
       <h1>Meltech iPhones <span>Dashboard</span></h1>
     </div>
     <div class="header-right">
+      <div class="login-user-badge" id="user-badge" style="display:none;">
+        <span>👤</span><span id="user-badge-name"></span>
+        <button class="logout-btn" onclick="doLogout()">Sair</button>
+      </div>
       <div class="month-selector">
         <select id="sel-mes" onchange="renderDashboard()" style="background:var(--surface);border:1px solid var(--border);border-radius:8px 0 0 8px;color:var(--accent);padding:8px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;cursor:pointer;border-right:none;">
           <option value="0">Janeiro</option>
@@ -982,63 +1112,83 @@
       </div>
     </div>
 
-    <!-- KPIs anuais -->
-    <div class="kpi-grid" id="anual-kpis" style="margin-bottom:20px;"></div>
-
-    <!-- Tabela mensal do ano -->
-    <div class="data-card" style="margin-bottom:20px;">
-      <div class="data-card-header">
-        <div>
-          <div class="data-card-title">Detalhamento Mensal</div>
-          <div class="data-card-sub" id="anual-table-sub">Todos os meses do ano selecionado</div>
-        </div>
-      </div>
-      <div class="table-scroll">
-          <table>
-        <thead>
-          <tr>
-            <th>Mês</th>
-            <th>Faturamento</th>
-            <th>Lucro</th>
-            <th>Margem</th>
-            <th>Aparelhos</th>
-            <th>Lucro/Un</th>
-            <th>vs Ano Ant.</th>
-          </tr>
-        </thead>
-        <tbody id="anual-tbody"></tbody>
-      </table>
-          </div>
+    <!-- INNER TABS -->
+    <div class="inner-tab-nav">
+      <button class="inner-tab-btn active" onclick="showInnerAnual('resumo', this)">Resumo do Ano</button>
+      <button class="inner-tab-btn" onclick="showInnerAnual('trimestre', this)">Metas Trimestrais</button>
     </div>
 
-    <!-- Gráfico anual -->
-    <div class="bottom-grid">
-      <div class="data-card">
+    <!-- INNER: RESUMO -->
+    <div class="inner-view active" id="inner-resumo">
+      <!-- KPIs anuais -->
+      <div class="kpi-grid" id="anual-kpis" style="margin-bottom:20px;"></div>
+
+      <!-- Tabela mensal do ano -->
+      <div class="data-card" style="margin-bottom:20px;">
         <div class="data-card-header">
-          <div><div class="data-card-title">Faturamento por Mês</div><div class="data-card-sub" id="anual-chart-fat-sub"></div></div>
+          <div>
+            <div class="data-card-title">Detalhamento Mensal</div>
+            <div class="data-card-sub" id="anual-table-sub">Todos os meses do ano selecionado</div>
+          </div>
         </div>
-        <div class="chart-wrap">
-          <div class="bar-chart" id="anual-chart-fat"></div>
-          <div class="bar-labels" id="anual-labels-fat"></div>
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot current"></div> Ano selecionado</div>
-          <div class="legend-item"><div class="legend-dot prev"></div> Ano anterior</div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Mês</th>
+                <th>Faturamento</th>
+                <th>Lucro</th>
+                <th>Margem</th>
+                <th>Aparelhos</th>
+                <th>Lucro/Un</th>
+                <th>vs Ano Ant.</th>
+              </tr>
+            </thead>
+            <tbody id="anual-tbody"></tbody>
+          </table>
         </div>
       </div>
-      <div class="data-card">
-        <div class="data-card-header">
-          <div><div class="data-card-title">Lucro por Mês</div><div class="data-card-sub" id="anual-chart-lucro-sub"></div></div>
+
+      <!-- Gráfico anual -->
+      <div class="bottom-grid">
+        <div class="data-card">
+          <div class="data-card-header">
+            <div><div class="data-card-title">Faturamento por Mês</div><div class="data-card-sub" id="anual-chart-fat-sub"></div></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="bar-chart" id="anual-chart-fat"></div>
+            <div class="bar-labels" id="anual-labels-fat"></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot current"></div> Ano selecionado</div>
+            <div class="legend-item"><div class="legend-dot prev"></div> Ano anterior</div>
+          </div>
         </div>
-        <div class="chart-wrap">
-          <div class="bar-chart" id="anual-chart-lucro"></div>
-          <div class="bar-labels" id="anual-labels-lucro"></div>
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item"><div class="legend-dot current" style="background:var(--accent3);"></div> Ano selecionado</div>
-          <div class="legend-item"><div class="legend-dot prev"></div> Ano anterior</div>
+        <div class="data-card">
+          <div class="data-card-header">
+            <div><div class="data-card-title">Lucro por Mês</div><div class="data-card-sub" id="anual-chart-lucro-sub"></div></div>
+          </div>
+          <div class="chart-wrap">
+            <div class="bar-chart" id="anual-chart-lucro"></div>
+            <div class="bar-labels" id="anual-labels-lucro"></div>
+          </div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot current" style="background:var(--accent3);"></div> Ano selecionado</div>
+            <div class="legend-item"><div class="legend-dot prev"></div> Ano anterior</div>
+          </div>
         </div>
       </div>
+    </div>
+
+    <!-- INNER: METAS TRIMESTRAIS -->
+    <div class="inner-view" id="inner-trimestre">
+      <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;">
+        <button class="tab-btn active" id="trim-btn-1" onclick="selectTrimestre(1)">T1 — Jan/Mar</button>
+        <button class="tab-btn" id="trim-btn-2" onclick="selectTrimestre(2)">T2 — Abr/Jun</button>
+        <button class="tab-btn" id="trim-btn-3" onclick="selectTrimestre(3)">T3 — Jul/Set</button>
+        <button class="tab-btn" id="trim-btn-4" onclick="selectTrimestre(4)">T4 — Out/Dez</button>
+      </div>
+      <div id="trim-content"></div>
     </div>
   </div>
 
@@ -1171,7 +1321,7 @@
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbxaLaEZT3EmT1agcI8WcZ_f6m7GfquZPztKp7OYKIMVYnXamLnlAhtAdbq7ia00DpfFVw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzoDKZo5Uv95gHh-tgUVw2aE9bpaIf4dhLGmSDxg_5cfWNenOlwfusak3MfFmP6cFXBpA/exec';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTHS_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -1189,11 +1339,17 @@ async function apiGet() {
   try {
     const res = await fetch(API_URL);
     const json = await res.json();
-    _cache = { entries: json.dados || {}, metas: json.metas || {}, taxas: json.taxas || {} };
+    _cache = {
+      entries: json.dados || {},
+      metas: json.metas || {},
+      taxas: json.taxas || {},
+      usuarios: json.usuarios || [],
+      metasTrimestrais: json.metasTrimestrais || {}
+    };
     return _cache;
   } catch (err) {
     showToast('❌ Erro ao carregar dados da planilha.');
-    return { entries: {}, metas: {} };
+    return { entries: {}, metas: {}, taxas: {}, usuarios: [], metasTrimestrais: {} };
   } finally {
     setLoading(false);
   }
@@ -1205,11 +1361,193 @@ async function apiPost(body) {
       method: 'POST',
       body: JSON.stringify(body),
     });
-    _cache = null; // invalida cache após escrita
+    _cache = null;
   } catch (err) {
     showToast('❌ Erro ao salvar na planilha.');
     throw err;
   }
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
+
+async function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  errEl.textContent = '';
+  if (!user || !pass) { errEl.textContent = 'Preencha usuário e senha.'; return; }
+  btn.disabled = true; btn.textContent = 'Verificando...';
+  try {
+    const data = await apiGet();
+
+    // Diagnóstico: se a aba Usuarios não existe na planilha ainda
+    if (!data.usuarios || data.usuarios.length === 0) {
+      errEl.textContent = 'A aba "Usuarios" não foi encontrada na planilha ou está vazia. Crie-a conforme as instruções.';
+      return;
+    }
+
+    const match = data.usuarios.find(u =>
+      String(u.usuario).toLowerCase() === user.toLowerCase() &&
+      String(u.senha) === pass
+    );
+    if (match) {
+      sessionStorage.setItem('meltech_user', match.usuario);
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('user-badge').style.display = 'flex';
+      document.getElementById('user-badge-name').textContent = match.usuario;
+      renderDashboard();
+    } else {
+      errEl.textContent = 'Usuário ou senha incorretos.';
+    }
+  } catch (e) {
+    errEl.textContent = 'Erro ao conectar com a planilha. Verifique a API.';
+    console.error('Login error:', e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Entrar';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('meltech_user');
+  _cache = null;
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('user-badge').style.display = 'none';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').textContent = '';
+}
+
+function checkSession() {
+  const saved = sessionStorage.getItem('meltech_user');
+  if (saved) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('user-badge').style.display = 'flex';
+    document.getElementById('user-badge-name').textContent = saved;
+    return true;
+  }
+  return false;
+}
+
+// ─── ANUAL INNER TABS ─────────────────────────────────────────────────────────
+
+function showInnerAnual(name, btn) {
+  document.querySelectorAll('.inner-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.inner-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('inner-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'trimestre') renderTrimestre();
+}
+
+// ─── METAS TRIMESTRAIS ────────────────────────────────────────────────────────
+
+let _trimAtivo = 1;
+
+function selectTrimestre(t) {
+  _trimAtivo = t;
+  [1,2,3,4].forEach(i => {
+    const b = document.getElementById('trim-btn-' + i);
+    b.classList.toggle('active', i === t);
+    b.style.background = i === t ? 'var(--accent)' : '';
+    b.style.color = i === t ? '#000' : '';
+  });
+  renderTrimestre();
+}
+
+async function renderTrimestre() {
+  const data = await apiGet();
+  const cy = parseInt(document.getElementById('anual-sel-ano').value);
+  const t = _trimAtivo;
+  const mesesDoTrim = [[0,1,2],[3,4,5],[6,7,8],[9,10,11]][t-1];
+  const nomesT = ['T1 — Janeiro a Março','T2 — Abril a Junho','T3 — Julho a Setembro','T4 — Outubro a Dezembro'];
+  const container = document.getElementById('trim-content');
+
+  // Meta trimestral geral
+  const metaKey = `T${t}_${cy}`;
+  const metaTrim = data.metasTrimestrais[metaKey] || 0;
+
+  // Soma lucro dos 3 meses e busca meta mensal individual de cada mês
+  let lucroTotal = 0, lucroMeses = [];
+  mesesDoTrim.forEach(m => {
+    const e = data.entries[entryKey(cy, m)];
+    const l = e?.lucro || 0;
+    lucroTotal += l;
+    // Meta mensal individual vinda da aba Metas (mesma usada no dashboard)
+    const metaMes = data.metas[m]?.[cy] || 0;
+    lucroMeses.push({ mes: m, lucro: l, temDado: !!e, metaMes });
+  });
+
+  const pct = metaTrim > 0 ? Math.min((lucroTotal / metaTrim) * 100, 100) : 0;
+  const falta = Math.max(metaTrim - lucroTotal, 0);
+  const cor = pct >= 100 ? 'var(--accent3)' : pct >= 70 ? 'var(--warn)' : 'var(--accent)';
+
+  // Renderiza HTML com barras começando em 0 (sem width inline nas fills)
+  container.innerHTML = `
+    <div class="kpi-grid" style="margin-bottom:20px;">
+      <div class="kpi-card">
+        <div class="kpi-label">Meta Trimestral de Lucro</div>
+        <div class="kpi-value cyan">${metaTrim > 0 ? fmt(metaTrim) : '—'}</div>
+        <div class="kpi-delta neutral">${nomesT[t-1]}</div>
+        <div class="kpi-icon">🎯</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Lucro Acumulado</div>
+        <div class="kpi-value green">${fmt(lucroTotal)}</div>
+        <div class="kpi-delta neutral">${lucroMeses.filter(m=>m.temDado).length} de 3 meses lançados</div>
+        <div class="kpi-icon">📈</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">% Atingido</div>
+        <div class="kpi-value" style="color:${cor};">${metaTrim > 0 ? pct.toFixed(1)+'%' : '—'}</div>
+        <div class="kpi-delta neutral">${metaTrim > 0 && falta > 0 ? 'Falta '+fmt(falta) : pct >= 100 ? '🏆 Meta batida!' : '—'}</div>
+        <div class="kpi-icon">📊</div>
+      </div>
+    </div>
+
+    ${metaTrim > 0 ? `
+    <div class="data-card" style="padding:20px;margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;">${nomesT[t-1]} · ${cy}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;">Meta de Lucro: ${fmt(metaTrim)}</div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:${cor};">${pct.toFixed(1)}%</div>
+      </div>
+      <div class="trim-bar-wrap"><div class="trim-bar-fill" data-width="${pct}" style="width:0%;background:linear-gradient(90deg,${cor},${cor}88);"></div></div>
+    </div>` : `
+    <div class="data-card" style="padding:20px;margin-bottom:20px;text-align:center;color:var(--muted);">
+      Nenhuma meta configurada para ${nomesT[t-1]} de ${cy}.<br>
+      <span style="font-size:12px;">Adicione na aba "MetasTrimestrais" da planilha com a chave <code style="color:var(--accent)">T${t}_${cy}</code>.</span>
+    </div>`}
+
+    ${lucroMeses.map(({mes, lucro, temDado, metaMes}) => {
+      const temMeta = metaMes > 0;
+      const pctMes = temMeta ? Math.min((lucro / metaMes) * 100, 100) : 0;
+      const corMes = pctMes >= 100 ? 'var(--accent3)' : pctMes >= 70 ? 'var(--warn)' : 'var(--accent)';
+      return `
+      <div class="trim-month-card">
+        <div class="trim-month-header">
+          <div class="trim-month-name">${MONTHS_FULL[mes]}</div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            ${temMeta ? `<span style="font-size:12px;color:var(--muted);">Meta: ${fmt(metaMes)}</span>` : '<span style="font-size:12px;color:var(--muted);">Sem meta definida</span>'}
+            <span style="font-family:\'JetBrains Mono\',monospace;font-size:16px;font-weight:700;color:${temDado ? 'var(--accent3)' : 'var(--muted)'};">${temDado ? fmt(lucro) : '—'}</span>
+            ${temMeta && temDado ? `<span style="font-size:13px;font-weight:700;color:${corMes};">${pctMes.toFixed(0)}%</span>` : ''}
+          </div>
+        </div>
+        ${temMeta && temDado ? `
+        <div class="trim-bar-wrap"><div class="trim-bar-fill" data-width="${pctMes}" style="width:0%;background:linear-gradient(90deg,${corMes},${corMes}88);"></div></div>` : ''}
+      </div>`;
+    }).join('')}
+  `;
+
+  // Anima as barras após o DOM ser pintado
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      container.querySelectorAll('.trim-bar-fill').forEach(el => {
+        el.style.width = el.dataset.width + '%';
+      });
+    });
+  });
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
@@ -1759,7 +2097,7 @@ async function renderSimulacao() {
       <td class="month-name">${op.label}</td>
       <td>${(taxaPct * 100).toFixed(2)}%</td>
       <td style="color:var(--accent);font-weight:600;">${fmt(valorCliente)}</td>
-      <td>${op.key === 'debito' ? fmt(valorCliente) : `${Math.ceil(valorParcela)} <span style="color:var(--muted);font-size:11px;">(${parcelaCount}x)</span>`}</td>
+      <td>${op.key === 'debito' ? fmt(valorCliente) : `${fmt(valorParcela)} <span style="color:var(--muted);font-size:11px;">(${parcelaCount}x)</span>`}</td>
       <td style="color:var(--warn);">${fmt(juros)}</td>
       <td style="color:var(--accent3);font-weight:600;">${fmt(valorRecebido)}</td>
     </tr>`;
@@ -1812,7 +2150,7 @@ initDashboardSelectors();
 initAnualSelector();
 initComparativoSelectors();
 initSimulacao();
-renderDashboard();
+if (checkSession()) renderDashboard();
 </script>
 </body>
 </html>
