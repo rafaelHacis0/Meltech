@@ -885,7 +885,7 @@
     margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
   }
   .trim-month-name { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 15px; }
-  .trim-bar-wrap { background: var(--accent2); border-radius: 6px; height: 8px; overflow: hidden; }
+  .trim-bar-wrap { background: var(--bg); border-radius: 6px; height: 8px; overflow: hidden; }
   .trim-bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; }
 </style>
 </head>
@@ -965,6 +965,7 @@
         <div class="kpi-label">Lucro Líquido</div>
         <div class="kpi-value green" id="kpi-lucro">R$ 0</div>
         <div class="kpi-delta" id="delta-lucro">— Sem dados anteriores</div>
+        <div class="kpi-delta" id="delta-lucro2">— Sem dados anteriores</div>
         <div class="kpi-icon">📈</div>
       </div>
       <div class="kpi-card">
@@ -998,7 +999,7 @@
       </div>
       <div class="meta-stats">
         <div class="meta-stat">
-          <div class="meta-stat-label">Lucro Atual</div>
+          <div class="meta-stat-label">% da Meta</div>
           <div class="meta-stat-val accent" id="meta-pct">0%</div>
         </div>
         <div class="meta-stat">
@@ -1006,12 +1007,12 @@
           <div class="meta-stat-val warn" id="meta-falta">R$ 0</div>
         </div>
         <div class="meta-stat">
-          <div class="meta-stat-label">Dias Restantes</div>
-          <div class="meta-stat-val" id="meta-dias">—</div>
+          <div class="meta-stat-label">vs Meta (planilha)</div>
+          <div class="meta-stat-val" id="meta-pct-planilha">—</div>
         </div>
         <div class="meta-stat">
-          <div class="meta-stat-label">Ritmo Necessário/Dia</div>
-          <div class="meta-stat-val" id="meta-ritmo">R$ 0</div>
+          <div class="meta-stat-label">Aparelhos p/ Bater Meta</div>
+          <div class="meta-stat-val" id="meta-aparelhos">—</div>
         </div>
       </div>
     </div>
@@ -1034,7 +1035,7 @@
       </div>
       <div class="meta-stats">
         <div class="meta-stat">
-          <div class="meta-stat-label">Lucro Atual</div>
+          <div class="meta-stat-label">% da Meta Alta</div>
           <div class="meta-stat-val warn" id="meta-alta-pct">0%</div>
         </div>
         <div class="meta-stat">
@@ -1042,12 +1043,12 @@
           <div class="meta-stat-val warn" id="meta-alta-falta">—</div>
         </div>
         <div class="meta-stat">
-          <div class="meta-stat-label">Dias Restantes</div>
-          <div class="meta-stat-val" id="meta-alta-dias">—</div>
+          <div class="meta-stat-label">vs Meta Alta (planilha)</div>
+          <div class="meta-stat-val" id="meta-alta-pct-planilha">—</div>
         </div>
         <div class="meta-stat">
-          <div class="meta-stat-label">Ritmo Necessário/Dia</div>
-          <div class="meta-stat-val" id="meta-alta-ritmo">—</div>
+          <div class="meta-stat-label">Aparelhos p/ Bater Meta Alta</div>
+          <div class="meta-stat-val" id="meta-alta-aparelhos">—</div>
         </div>
       </div>
     </div>
@@ -1321,7 +1322,7 @@
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbzoDKZo5Uv95gHh-tgUVw2aE9bpaIf4dhLGmSDxg_5cfWNenOlwfusak3MfFmP6cFXBpA/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwBkvZh9xSAOSzX4rjF17uoc5wkH33ULuEBavOoV6V7o5W6wi1rJyaruRm55S-xwRIR-Q/exec';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTHS_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -1621,60 +1622,99 @@ async function renderDashboard() {
   document.getElementById('kpi-lucro-medio').textContent = fmt(lucroMedio);
   document.getElementById('kpi-qtd').textContent = qtd || '0';
 
-  function makeDelta(el, cur, prev) {
+  // Deltas: usa yoy_pct da planilha se existir, senão calcula
+  function makeDelta(el, curVal, prevVal, yoyFromSheet) {
     const el2 = document.getElementById(el);
-    if (!prev || !cur) { el2.className = 'kpi-delta neutral'; el2.innerHTML = '— Sem dado do ano anterior'; return; }
-    const diff = ((cur - prev) / prev * 100);
+    let diff;
+    if (yoyFromSheet !== null && yoyFromSheet !== undefined) {
+      diff = yoyFromSheet * 100; // espera decimal ex: 0.12 = 12%
+    } else if (prevVal && curVal) {
+      diff = ((curVal - prevVal) / prevVal * 100);
+    } else {
+      el2.className = 'kpi-delta neutral';
+      el2.innerHTML = '— Sem dado do ano anterior';
+      return;
+    }
     const arrow = diff >= 0 ? '▲' : '▼';
     const cls = diff >= 0 ? 'up' : 'down';
     el2.className = 'kpi-delta ' + cls;
-    el2.innerHTML = `${arrow} ${Math.abs(diff).toFixed(1)}% vs ${MONTHS[cm]}/${cy-1}`;
+    el2.innerHTML = `${arrow} ${Math.abs(diff).toFixed(1)}% vs ${MONTHS[cm]}/${cy-1}${yoyFromSheet !== null ? '' : ''}`;
+  }
+    function makDelta(el, curVal, prevVal, yoyFromSheet) {
+    const el2 = document.getElementById(el);
+    let diff;
+    if (yoyFromSheet !== null && yoyFromSheet !== undefined) {
+      diff = yoyFromSheet * 100; // espera decimal ex: 0.12 = 12%
+    } else if (prevVal && curVal) {
+      diff = ((curVal - prevVal) / prevVal * 100);
+    } else {
+      el2.className = 'kpi-delta neutral';
+      el2.innerHTML = '— Sem dado do ano anterior';
+      return;
+    }
+    const arrow = diff >= 0 ? '▲' : '▼';
+    const cls = diff >= 0 ? 'up' : 'down';
+    el2.className = 'kpi-delta ' + cls;
+    el2.innerHTML = `${arrow} ${Math.abs(diff).toFixed(1)}% em relação a Meta`;
   }
 
-  makeDelta('delta-faturamento', fat, prev?.fat);
-  makeDelta('delta-lucro', lucro, prev?.lucro);
+  makeDelta('delta-faturamento', fat, prev?.fat, cur?.yoy_fat ?? null);
+  makeDelta('delta-lucro', lucro, prev?.lucro, cur?.yoy_lucro ?? null);
+  makDelta('delta-lucro2', lucro, prev?.lucro, cur?.meta_pct ?? null);
   const prevLucroMedio = prev && prev.qtd > 0 ? prev.lucro / prev.qtd : null;
-  makeDelta('delta-lucro-medio', lucroMedio, prevLucroMedio);
-  makeDelta('delta-qtd', qtd, prev?.qtd);
+  makeDelta('delta-lucro-medio', lucroMedio, prevLucroMedio, null);
+  makeDelta('delta-qtd', qtd, prev?.qtd, cur?.yoy_qtd ?? null);
 
   // META (baseada em lucro)
   const metaKey = `${cm}`;
   const meta = data.metas[metaKey] ? data.metas[metaKey][cy] || 0 : 0;
   const progress = meta > 0 ? (lucro / meta) * 100 : 0;
   const falta = Math.max(meta - lucro, 0);
-  const diasRest = daysRemainingInMonth(cy, cm);
-  const ritmo = diasRest > 0 && falta > 0 ? falta / diasRest : 0;
+
+  // Aparelhos p/ bater meta: falta / lucro médio por aparelho
+  const aparelhosFaltam = lucroMedio > 0 && falta > 0 ? Math.ceil(falta / lucroMedio) : 0;
+
+  // % da meta vindo da planilha
+  const metaPctPlanilha = cur?.meta_pct ?? null;
 
   document.getElementById('meta-current-val').textContent = fmt(lucro);
   document.getElementById('meta-goal-label').textContent = 'Meta de Lucro: ' + fmt(meta);
   document.getElementById('meta-pct').textContent = meta > 0 ? progress.toFixed(1) + '%' : '—';
   document.getElementById('meta-falta').textContent = meta > 0 ? fmt(falta) : '—';
-  document.getElementById('meta-dias').textContent = diasRest + ' dias';
-  document.getElementById('meta-ritmo').textContent = ritmo > 0 ? fmt(ritmo) + '/dia' : '—';
+  document.getElementById('meta-pct-planilha').textContent = metaPctPlanilha !== null
+    ? (metaPctPlanilha * 100).toFixed(1) + '%'
+    : (meta > 0 ? progress.toFixed(1) + '%' : '—');
+  document.getElementById('meta-aparelhos').textContent = aparelhosFaltam > 0
+    ? `${aparelhosFaltam} aparelho${aparelhosFaltam > 1 ? 's' : ''}`
+    : (falta === 0 && meta > 0 ? '🏆 Meta batida!' : '—');
   document.getElementById('meta-subtitle').textContent =
     meta > 0 ? `${MONTHS_FULL[cm]} ${cy} — Meta de Lucro: ${fmt(meta)}` : 'Configure a meta de lucro na aba Metas';
 
   setTimeout(() => {
-    document.getElementById('meta-progress-bar').style.width = progress + '%';
+    document.getElementById('meta-progress-bar').style.width = Math.min(progress, 100) + '%';
   }, 100);
 
   // META ALTA (+20%)
   const metaAlta = meta * 1.2;
   const progressAlta = metaAlta > 0 ? (lucro / metaAlta) * 100 : 0;
   const faltaAlta = Math.max(metaAlta - lucro, 0);
-  const ritmoAlta = diasRest > 0 && faltaAlta > 0 ? faltaAlta / diasRest : 0;
+  const aparelhosFaltamAlta = lucroMedio > 0 && faltaAlta > 0 ? Math.ceil(faltaAlta / lucroMedio) : 0;
 
   document.getElementById('meta-alta-current-val').textContent = fmt(lucro);
   document.getElementById('meta-alta-goal-label').textContent = 'Meta Alta: ' + fmt(metaAlta);
   document.getElementById('meta-alta-pct').textContent = metaAlta > 0 ? progressAlta.toFixed(1) + '%' : '—';
   document.getElementById('meta-alta-falta').textContent = metaAlta > 0 ? fmt(faltaAlta) : '—';
-  document.getElementById('meta-alta-dias').textContent = diasRest + ' dias';
-  document.getElementById('meta-alta-ritmo').textContent = ritmoAlta > 0 ? fmt(ritmoAlta) + '/dia' : '—';
+  document.getElementById('meta-alta-pct-planilha').textContent = metaPctPlanilha !== null
+    ? ((metaPctPlanilha * 100) / 1.2).toFixed(1) + '%'
+    : (metaAlta > 0 ? progressAlta.toFixed(1) + '%' : '—');
+  document.getElementById('meta-alta-aparelhos').textContent = aparelhosFaltamAlta > 0
+    ? `${aparelhosFaltamAlta} aparelho${aparelhosFaltamAlta > 1 ? 's' : ''}`
+    : (faltaAlta === 0 && metaAlta > 0 ? '🏆 Meta batida!' : '—');
   document.getElementById('meta-alta-subtitle').textContent =
     metaAlta > 0 ? `${MONTHS_FULL[cm]} ${cy} — Meta Alta: ${fmt(metaAlta)}` : 'Configure a meta base na aba Metas';
 
   setTimeout(() => {
-    document.getElementById('meta-alta-progress-bar').style.width = progressAlta + '%';
+    document.getElementById('meta-alta-progress-bar').style.width = Math.min(progressAlta, 100) + '%';
   }, 100);
 
   renderHistorico(data, cy, cm);
