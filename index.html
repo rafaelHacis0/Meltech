@@ -1644,14 +1644,21 @@ async function renderDashboard() {
     const el2 = document.getElementById(el);
     let diff;
     if (yoyFromSheet !== null && yoyFromSheet !== undefined) {
-      diff = yoyFromSheet * 100; // espera decimal ex: 0.12 = 12%
+      diff = yoyFromSheet * 100;
     } else if (prevVal && curVal) {
       diff = ((curVal - prevVal) / prevVal * 100);
     } else {
       el2.className = 'kpi-delta neutral';
-      el2.innerHTML = '— Sem dado do ano anterior';
+      el2.innerHTML = '';
+      el2.style.display = 'none';
       return;
     }
+    if (diff === 0) {
+      el2.innerHTML = '';
+      el2.style.display = 'none';
+      return;
+    }
+    el2.style.display = '';
     const arrow = diff >= 0 ? '▲' : '▼';
     const cls = diff >= 0 ? 'up' : 'down';
     el2.className = 'kpi-delta ' + cls;
