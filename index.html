@@ -2126,19 +2126,20 @@ async function renderSimulacao() {
     }
 
     const parcelaCount = op.key === 'debito' ? 1 : op.key;
-    let valorCliente, valorRecebido, juros;
+    let valorCliente, valorRecebido, juros, valorParcela;
 
     if (_repasseTaxa) {
-      valorCliente = valorProduto / (1 - taxaPct);
+      const valorClienteBruto = valorProduto / (1 - taxaPct);
+      valorParcela = Math.ceil(valorClienteBruto / parcelaCount);
+      valorCliente = valorParcela * parcelaCount;
       valorRecebido = valorProduto;
       juros = valorCliente - valorProduto;
     } else {
-      valorCliente = valorProduto;
+      valorParcela = Math.ceil(valorProduto / parcelaCount);
+      valorCliente = valorParcela * parcelaCount;
       juros = valorProduto * taxaPct;
       valorRecebido = valorProduto - juros;
     }
-
-    const valorParcela = valorCliente / parcelaCount;
 
     return `<tr>
       <td class="month-name">${op.label}</td>
