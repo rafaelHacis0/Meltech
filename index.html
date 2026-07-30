@@ -946,6 +946,7 @@
         <button class="tab-btn" onclick="showView('anual')">Visão Anual</button>
         <button class="tab-btn" onclick="showView('comparativo')">Comparativo</button>
         <button class="tab-btn" onclick="showView('simulacao')">Simulação</button>
+        <button class="tab-btn" onclick="showView('anuncio')">Anúncio</button>
       </nav>
     </div>
   </header>
@@ -1309,6 +1310,53 @@
     </div>
   </div>
 
+  <!-- ===== GERADOR DE ANÚNCIO ===== -->
+  <div class="view" id="view-anuncio">
+    <div class="section-header" style="margin-bottom:20px;">
+      <div class="section-title">Gerador de Anúncio</div>
+    </div>
+
+    <div class="sim-layout" style="display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start;">
+
+      <!-- Painel de controles -->
+      <div class="form-card" style="margin-bottom:0;">
+        <div class="form-field" style="margin-bottom:16px;">
+          <label>Modelo</label>
+          <input type="text" id="an-modelo" placeholder="Ex: 13 Pro Max" oninput="renderAnuncio()">
+        </div>
+
+        <div class="form-field" style="margin-bottom:16px;">
+          <label>Cor</label>
+          <input type="text" id="an-cor" placeholder="Ex: Grafite" oninput="renderAnuncio()">
+        </div>
+
+        <div class="form-field" style="margin-bottom:16px;">
+          <label>Bateria (%)</label>
+          <input type="number" id="an-bateria" placeholder="Ex: 89" min="0" max="100" oninput="renderAnuncio()">
+        </div>
+
+        <div class="form-field" style="margin-bottom:4px;">
+          <label>Preço à vista (R$)</label>
+          <input type="number" id="an-preco" placeholder="Ex: 3500" min="0" oninput="renderAnuncio()">
+        </div>
+      </div>
+
+      <!-- Resultado -->
+      <div class="data-card">
+        <div class="data-card-header">
+          <div>
+            <div class="data-card-title">Texto do anúncio</div>
+            <div class="data-card-sub">12x (12,4% de juros) · 18x (17,5%) · 21x (19,8%) — parcela sempre arredondada pra cima</div>
+          </div>
+          <button class="btn-primary" onclick="copiarAnuncio()">Copiar</button>
+        </div>
+        <div style="padding:16px;">
+          <pre id="an-output" style="white-space:pre-wrap;font-family:'Inter',sans-serif;font-size:14px;line-height:1.6;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;margin:0;min-height:200px;"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1590,6 +1638,7 @@ function showView(name) {
   if (name === 'anual') renderAnual();
   if (name === 'comparativo') renderComparativo();
   if (name === 'simulacao') renderSimulacao();
+  if (name === 'anuncio') renderAnuncio();
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -2190,6 +2239,52 @@ function renderTabelaTaxas(taxas, maquinaAtiva) {
     </tr>`);
   }
   tbody.innerHTML = rows.join('');
+}
+
+// ─── GERADOR DE ANÚNCIO ───────────────────────────────────────────────────────
+
+function renderAnuncio() {
+  const modelo = document.getElementById('an-modelo').value.trim();
+  const cor = document.getElementById('an-cor').value.trim();
+  const bateria = document.getElementById('an-bateria').value.trim();
+  const preco = parseInt(document.getElementById('an-preco').value || 0, 10);
+
+  const out = document.getElementById('an-output');
+
+  if (!preco) {
+    out.textContent = 'Preencha o preço à vista para gerar o anúncio.';
+    return;
+  }
+
+  const sim1 = Math.ceil((preco / 0.876) / 12);
+  const sim2 = Math.ceil((preco / 0.825) / 18);
+  const sim3 = Math.ceil((preco / 0.802) / 21);
+
+  const linhas = [
+    `*iPhone ${modelo || '—'} Seminovo*`,
+    `🎨 ${cor || '—'}`,
+    `🔋 Bateria ${bateria || '—'}%`,
+    `🎁 Capa e película de brinde`,
+    `📄 6 Meses de garantia completa`,
+    ``,
+    `*R$${preco},00 à vista*`,
+    `Ou 12x R$${sim1},00 | 18x R$${sim2},00 | 21x R$${sim3},00`
+  ];
+
+  out.textContent = linhas.join('\n');
+}
+
+function copiarAnuncio() {
+  const texto = document.getElementById('an-output').textContent;
+  if (!texto || texto.startsWith('Preencha')) {
+    showToast('⚠️ Preencha os dados antes de copiar.');
+    return;
+  }
+  navigator.clipboard.writeText(texto).then(() => {
+    showToast('✅ Anúncio copiado!');
+  }).catch(() => {
+    showToast('❌ Não foi possível copiar.');
+  });
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
