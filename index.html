@@ -947,6 +947,7 @@
         <button class="tab-btn" onclick="showView('comparativo')">Comparativo</button>
         <button class="tab-btn" onclick="showView('simulacao')">Simulação</button>
         <button class="tab-btn" onclick="showView('anuncio')">Anúncio</button>
+        <button class="tab-btn" onclick="showView('avaliacao')">Avaliação</button>
       </nav>
     </div>
   </header>
@@ -1357,6 +1358,48 @@
     </div>
   </div>
 
+  <!-- ===== AVALIAÇÃO DE IPHONE ===== -->
+  <div class="view" id="view-avaliacao">
+    <div class="section-header" style="margin-bottom:20px;">
+      <div class="section-title">Avaliação de iPhone</div>
+    </div>
+
+    <div class="sim-layout" style="display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start;">
+
+      <!-- Painel de controles -->
+      <div class="form-card" style="margin-bottom:0;">
+        <div class="form-field" style="margin-bottom:16px;">
+          <label>Modelo</label>
+          <select id="aval-modelo" onchange="onModeloAvaliacaoChange()" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-family:'Inter',sans-serif;font-size:13px;outline:none;width:100%;"></select>
+        </div>
+        <div id="aval-criterios"></div>
+      </div>
+
+      <!-- Resultado -->
+      <div>
+        <div class="data-card">
+          <div class="data-card-header">
+            <div>
+              <div class="data-card-title">Resultado da avaliação</div>
+              <div class="data-card-sub">Valor base menos os descontos marcados ao lado</div>
+            </div>
+          </div>
+          <div style="padding:20px;">
+            <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+              <span style="color:var(--dim);">Valor base do modelo</span>
+              <span id="aval-valor-base" style="font-family:'JetBrains Mono',monospace;">R$ 0,00</span>
+            </div>
+            <div id="aval-descontos-lista"></div>
+            <div style="display:flex;justify-content:space-between;padding:14px 0 0;margin-top:8px;border-top:1px solid var(--border);">
+              <span style="font-weight:700;font-size:16px;">Quanto pagar</span>
+              <span id="aval-total" style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:20px;color:var(--accent);">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1370,7 +1413,7 @@
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 
-const API_URL = 'https://script.google.com/macros/s/AKfycbwBkvZh9xSAOSzX4rjF17uoc5wkH33ULuEBavOoV6V7o5W6wi1rJyaruRm55S-xwRIR-Q/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbx8SiQzvsr7wyOYQAp_8wNmIcJjDFYlXgGhs1cyPgynI5SST-8AylgwJGziF-ygQWlazQ/exec';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const MONTHS_FULL = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
@@ -1393,12 +1436,14 @@ async function apiGet() {
       metas: json.metas || {},
       taxas: json.taxas || {},
       usuarios: json.usuarios || [],
-      metasTrimestrais: json.metasTrimestrais || {}
+      metasTrimestrais: json.metasTrimestrais || {},
+      modelosAvaliacao: json.modelosAvaliacao || [],
+      criteriosAvaliacao: json.criteriosAvaliacao || []
     };
     return _cache;
   } catch (err) {
     showToast('❌ Erro ao carregar dados da planilha.');
-    return { entries: {}, metas: {}, taxas: {}, usuarios: [], metasTrimestrais: {} };
+    return { entries: {}, metas: {}, taxas: {}, usuarios: [], metasTrimestrais: {}, modelosAvaliacao: [], criteriosAvaliacao: [] };
   } finally {
     setLoading(false);
   }
@@ -1639,6 +1684,7 @@ function showView(name) {
   if (name === 'comparativo') renderComparativo();
   if (name === 'simulacao') renderSimulacao();
   if (name === 'anuncio') renderAnuncio();
+  if (name === 'avaliacao') renderAvaliacao();
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -2285,6 +2331,111 @@ function copiarAnuncio() {
   }).catch(() => {
     showToast('❌ Não foi possível copiar.');
   });
+}
+
+// ─── AVALIAÇÃO DE IPHONE ───────────────────────────────────────────────────────
+
+let _avalCriterios = [];
+let _avalCriteriosPorCategoria = {};
+let _avalSelecoes = {};
+
+async function renderAvaliacao() {
+  const data = await apiGet();
+  const modelos = data.modelosAvaliacao;
+  _avalCriterios = data.criteriosAvaliacao;
+
+  // Popula select de modelos (mantendo seleção atual se possível)
+  const selectEl = document.getElementById('aval-modelo');
+  const valorAtual = selectEl.value;
+  selectEl.innerHTML = modelos.map(m => `<option value="${m.modelo}">${m.modelo}</option>`).join('');
+  if (modelos.some(m => m.modelo === valorAtual)) selectEl.value = valorAtual;
+
+  montarCriteriosDoModelo();
+  calcularAvaliacao();
+}
+
+function montarCriteriosDoModelo() {
+  const modeloSelecionado = document.getElementById('aval-modelo').value;
+
+  // Filtra só os critérios cadastrados pra esse modelo e agrupa por categoria
+  _avalCriteriosPorCategoria = {};
+  _avalCriterios
+    .filter(c => c.modelo === modeloSelecionado)
+    .forEach(c => {
+      if (!_avalCriteriosPorCategoria[c.categoria]) _avalCriteriosPorCategoria[c.categoria] = [];
+      _avalCriteriosPorCategoria[c.categoria].push(c);
+    });
+
+  // Reseta seleção pra padrão (primeira opção de cada categoria) sempre que troca de modelo
+  _avalSelecoes = {};
+  Object.keys(_avalCriteriosPorCategoria).forEach(cat => { _avalSelecoes[cat] = 0; });
+
+  renderCriteriosAvaliacao();
+}
+
+function renderCriteriosAvaliacao() {
+  const container = document.getElementById('aval-criterios');
+  container.innerHTML = Object.keys(_avalCriteriosPorCategoria).map(cat => {
+    const opcoes = _avalCriteriosPorCategoria[cat];
+    const selecionado = _avalSelecoes[cat] || 0;
+    const botoes = opcoes.map((op, idx) => {
+      const ativo = idx === selecionado;
+      return `<button class="tab-btn${ativo ? ' active' : ''}" style="flex:1 1 auto;${ativo ? 'background:var(--accent);color:#000;' : ''}" onclick="selecionarCriterio('${cat.replace(/'/g, "\\'")}', ${idx})">${op.opcao}</button>`;
+    }).join('');
+    return `
+      <div class="form-field" style="margin-bottom:16px;">
+        <label>${cat}</label>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">${botoes}</div>
+      </div>`;
+  }).join('');
+}
+
+function selecionarCriterio(categoria, idx) {
+  _avalSelecoes[categoria] = idx;
+  renderCriteriosAvaliacao();
+  calcularAvaliacao();
+}
+
+async function onModeloAvaliacaoChange() {
+  montarCriteriosDoModelo();
+  calcularAvaliacao();
+}
+
+async function calcularAvaliacao() {
+  const data = await apiGet();
+  const modeloSelecionado = document.getElementById('aval-modelo').value;
+  const modeloInfo = data.modelosAvaliacao.find(m => m.modelo === modeloSelecionado);
+  const valorBase = modeloInfo ? modeloInfo.valorBase : 0;
+
+  let totalDesconto = 0;
+  const descontosAtivos = [];
+  Object.keys(_avalCriteriosPorCategoria).forEach(cat => {
+    const idx = _avalSelecoes[cat] || 0;
+    const opcao = _avalCriteriosPorCategoria[cat][idx];
+    if (opcao && opcao.desconto !== 0) {
+      totalDesconto += opcao.desconto;
+      descontosAtivos.push(opcao);
+    }
+  });
+
+  const total = Math.max(0, valorBase - totalDesconto);
+
+  document.getElementById('aval-valor-base').textContent = fmt(valorBase);
+  document.getElementById('aval-total').textContent = fmt(total);
+
+  const listaEl = document.getElementById('aval-descontos-lista');
+  if (descontosAtivos.length === 0) {
+    listaEl.innerHTML = `<div style="padding:10px 0;color:var(--dim);font-size:13px;">Nenhum desconto aplicado.</div>`;
+  } else {
+      listaEl.innerHTML = descontosAtivos.map(op => `
+        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+          <span style="color:var(--dim);">${op.categoria} — ${op.opcao}</span>
+          <span style="color:${op.desconto >= 0 ? '#ff6b6b' : '#22c55e'};">
+            ${op.desconto >= 0 ? '-' : '+'} ${fmt(Math.abs(op.desconto))}
+          </span>
+        </div>
+      `).join('');
+  }
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
